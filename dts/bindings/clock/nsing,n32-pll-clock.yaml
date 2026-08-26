@@ -1,0 +1,22 @@
+# Copyright (c) 2024 Nasing Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: Nsing Technologies N32 PLL clock
+
+compatible: "nsing,n32-pll-clock"
+
+include: [base.yaml, clock-controller.yaml]
+
+properties:
+  "#clock-cells":
+    const: 0
+
+  clocks:
+    required: true
+
+  mul:
+    type: int
+    required: true
+    description: |
+        Main PLL multiplication factor for VCO
+        Valid range: 2 - 16

@@ -1,0 +1,150 @@
+# Nationstech N32 firmware library config
+#
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config HAS_NSING_HAL
+	bool
+	select HAS_CMSIS_CORE if ARM
+
+if HAS_NSING_HAL
+
+config USE_NSING_MISC
+	bool
+	help
+	  Enable N32 Miscellaneous (MISC) HAL module driver
+
+config USE_NSING_ADC
+	bool
+	help
+	  Enable N32 Analog-to-Digital Converter (ADC) HAL module driver
+
+config USE_NSING_BKP
+	bool
+	help
+	  Enable N32 Backup Registers (BKP) HAL module driver
+
+config USE_NSING_CAN
+	bool
+	help
+	  Enable N32 Controller Area Network (CAN) HAL module driver
+
+config USE_NSING_COMP
+	bool
+	help
+	  Enable N32 Comparator (COMP) HAL module driver
+
+config USE_NSING_CRC
+	bool
+	help
+	  Enable N32 Cyclic redundancy check (CRC) HAL module driver
+
+config USE_NSING_DAC
+	bool
+	help
+	  Enable N32 Digital-to-Analog Converter (DAC) HAL module driver
+
+config USE_NSING_DBG
+	bool
+	help
+	  Enable N32 Debug (DBG) HAL module driver
+
+config USE_NSING_DMA
+	bool
+	help
+	  Enable N32 Direct Memory Access (DMA) HAL module driver
+
+config USE_NSING_DVP
+	bool
+	help
+	  Enable N32 Digital Video Port (DVP) HAL module driver
+
+config USE_NSING_ETH
+	bool
+	help
+	  Enable N32 Ethernet (ETH) HAL module driver
+
+config USE_NSING_EXTI
+	bool
+	help
+	  Enable N32 External Interrupt (EXTI) HAL module driver
+
+config USE_NSING_FLASH
+	bool
+	help
+	  Enable N32 Flash Memory Controller (FLASH) HAL module driver
+
+config USE_NSING_GPIO
+	bool
+	default y
+	help
+	  Enable N32 General-purpose I/O (GPIO) HAL module driver
+
+config USE_NSING_I2C
+	bool
+	help
+	  Enable N32 Inter-Integrated Circuit (I2C) HAL module driver
+
+config USE_NSING_IWDG
+	bool
+	help
+	  Enable N32 Independent Watchdog (IWDG) HAL module driver
+
+config USE_NSING_OPAMP
+	bool
+	help
+	  Enable N32 Operational Amplifier (OPAMP) HAL module driver
+
+config USE_NSING_PWR
+	bool
+	help
+	  Enable N32 Power Management (PWR) HAL module driver
+
+config USE_NSING_QSPI
+	bool
+	help
+	  Enable N32 Quad SPI (QSPI) HAL module driver
+
+config USE_NSING_RCC
+	bool
+	default y
+	help
+	  Enable N32 Reset and Clock Control (RCC) HAL module driver
+
+config USE_NSING_RTC
+	bool
+	help
+	  Enable N32 Real-Time Clock (RTC) HAL module driver
+
+config USE_NSING_SDIO
+	bool
+	help
+	  Enable N32 Secure Digital I/O (SDIO) HAL module driver
+
+config USE_NSING_SPI
+	bool
+	help
+	  Enable N32 Serial Peripheral Interface (SPI) HAL module driver
+
+config USE_NSING_TIM
+	bool
+	help
+	  Enable N32 Timer (TIM) HAL module driver
+
+config USE_NSING_TSC
+	bool
+	help
+	  Enable N32 Touch Sensing Controller (TSC) HAL module driver
+
+config USE_NSING_USART
+	bool
+	help
+	  Enable N32 Universal Synchronous/Asynchronous Receiver/Transmitter
+	  (USART) HAL module driver
+
+config USE_NSING_WWDGT
+	bool
+	help
+	  Enable N32 Window Watchdog (WWDGT) HAL module driver
+
+endif # HAS_NSING_HAL

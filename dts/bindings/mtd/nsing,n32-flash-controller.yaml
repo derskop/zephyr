@@ -1,0 +1,20 @@
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: Nations Technologies N32 flash controller
+
+compatible: "nsing,n32-flash-controller"
+
+include: [base.yaml]
+
+properties:
+  reg:
+    required: true
+
+  "#address-cells":
+    type: int
+    const: 1
+
+  "#size-cells":
+    type: int
+    const: 1

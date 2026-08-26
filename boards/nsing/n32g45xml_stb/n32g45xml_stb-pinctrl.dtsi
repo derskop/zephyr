@@ -1,0 +1,38 @@
+#include <nsing/n32g45x/n32g45x.dtsi>
+#include <zephyr/dt-bindings/pinctrl/n32-pinctrl.h>
+
+
+&pinctrl {
+
+    usart1_tx_pa9: usart1_tx_pa9 {
+        pinmux = <N32_PINMUX(N32_PORT_A, 9, AF_PP, SLEW_RATE_50MHZ)>;
+
+    };
+
+    usart1_rx_pa10: usart1_rx_pa10 {
+        pinmux = <N32_PINMUX(N32_PORT_A, 10, IN_FLOATING, SLEW_RATE_50MHZ)>;
+
+    };
+
+    i2c1_scl_pb6: i2c1_scl_pb6 {
+        pinmux = <N32_PINMUX(N32_PORT_B, 6, AF_OD, SLEW_RATE_2MHZ)>;
+
+    };
+
+    i2c1_sda_pb7: i2c1_sda_pb7 {
+        pinmux = <N32_PINMUX(N32_PORT_B, 7, AF_OD, SLEW_RATE_2MHZ)>;
+
+    };
+
+    i2c1_scl_pb8: i2c1_scl_pb8 {
+        pinmux = <N32_PINMUX(N32_PORT_B, 8, AF_OD, SLEW_RATE_2MHZ)>;
+        remap = <N32_RMP_I2C1>;
+    };
+
+    i2c1_sda_pb9: i2c1_sda_pb9 {
+        pinmux = <N32_PINMUX(N32_PORT_B, 9, AF_OD, SLEW_RATE_2MHZ)>;
+        remap = <N32_RMP_I2C1>;
+    };
+
+
+};

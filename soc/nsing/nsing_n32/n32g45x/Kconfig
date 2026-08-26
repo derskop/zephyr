@@ -1,0 +1,13 @@
+# Nations Technologies N32G45x MCU series
+
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+# 系列能力表：声明 N32G45x 系列具备的硬件能力
+# 注意：此处只加 select，不重复声明 bool（类型在 Kconfig.soc 里）
+config SOC_SERIES_N32G45X
+	select ARM
+	select CPU_CORTEX_M4
+	select CPU_HAS_FPU
+	select CPU_HAS_ARM_MPU
+	select SOC_EARLY_INIT_HOOK

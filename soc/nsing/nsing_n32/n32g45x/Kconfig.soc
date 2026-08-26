@@ -1,0 +1,22 @@
+# Nations Technologies N32G45x MCU series
+
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+# 系列符号：N32G45 系列（N32G452 / G455 / G457）
+config SOC_SERIES_N32G45X
+	bool
+	select SOC_FAMILY_NSING_N32
+
+# 系列字符串：对应目录 soc/nsing/n32g45x/
+config SOC_SERIES
+	default "n32g45x" if SOC_SERIES_N32G45X
+
+# 具体芯片符号：N32G457（后续如需支持 G452/G455 再补）
+config SOC_N32G457MEL
+	bool
+	select SOC_SERIES_N32G45X
+
+# 芯片字符串
+config SOC
+	default "n32g45x" if SOC_N32G457MEL

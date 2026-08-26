@@ -1,0 +1,17 @@
+# Nations Technologies N32 SoC family
+
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+# 家族符号：Nations N32 全家族（N32G45x / N32H78x 等）
+config SOC_FAMILY_NSING_N32
+	bool
+	select HAS_NSING_HAL
+	select BUILD_OUTPUT_HEX
+
+# 家族字符串：对应目录 soc/nsing/
+config SOC_FAMILY
+	default "nsing_n32" if SOC_FAMILY_NSING_N32
+
+# 递归加载所有系列的 Kconfig.soc（n32g45x/、n32h78x/…）
+rsource "*/Kconfig.soc"

@@ -7095,6 +7095,15 @@ West:
   labels:
     - "platform: nRF"
 
+"West project: hal_nsing":
+  status: maintained
+  maintainers:
+    - derskop
+  files:
+    - modules/hal_nsing/
+  labels:
+    - "platform: N32"
+
 "West project: hal_nuvoton":
   status: maintained
   maintainers:

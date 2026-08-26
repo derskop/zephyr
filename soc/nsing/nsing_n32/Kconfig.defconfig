@@ -1,0 +1,14 @@
+# Nations Technologies N32 SoC family
+
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+# 家族级默认值：所有 N32 系列共用的默认配置
+if SOC_FAMILY_NSING_N32
+
+# 先加载系列级默认值（n32g45x/Kconfig.defconfig 等），
+# 家族级默认值可在其后覆盖
+rsource "*/Kconfig.defconfig"
+
+
+endif # SOC_FAMILY_NSING_N32
