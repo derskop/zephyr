@@ -1,0 +1,10 @@
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config CLOCK_CTRL_N32
+	bool "N32 clock controller driver"
+	default y
+	depends on DT_HAS_NSING_N32_RCC_ENABLED
+	help
+	  Enable the Nations Technologies N32 Reset and Clock Control (RCC)
+	  driver.

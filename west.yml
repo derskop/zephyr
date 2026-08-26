@@ -207,6 +207,12 @@ manifest:
       path: modules/hal/nordic
       groups:
         - hal
+    - name: hal_nsing
+      url: https://github.com/derskop/hal_nsing
+      revision: main
+      path: modules/hal/nsing
+      groups:
+        - hal
     - name: hal_nuvoton
       revision: 0f411a85da7d17a612d54450f608f4d30cdb971f
       path: modules/hal/nuvoton

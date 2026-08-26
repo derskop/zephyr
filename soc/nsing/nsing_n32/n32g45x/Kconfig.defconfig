@@ -1,0 +1,12 @@
+# Nations Technologies N32G45x MCU series
+
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+
+if SOC_SERIES_N32G45X
+
+config NUM_IRQS
+	default 86
+
+endif  #SOC_SERIES_N32G45X

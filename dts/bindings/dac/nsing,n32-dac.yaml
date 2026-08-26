@@ -1,0 +1,26 @@
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: Nations Technologies N32 digital-to-analog converter
+
+compatible: "nsing,n32-dac"
+
+include: [dac-controller.yaml]
+
+properties:
+  reg:
+    required: true
+
+  clocks:
+    required: true
+
+  "#io-channel-cells":
+    const: 1
+
+  num-channels:
+    type: int
+    required: true
+    description: Number of DAC channels
+
+io-channel-cells:
+  - output

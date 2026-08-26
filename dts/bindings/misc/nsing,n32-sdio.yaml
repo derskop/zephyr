@@ -1,0 +1,16 @@
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: Nations Technologies N32 SDIO controller
+
+compatible: "nsing,n32-sdio"
+
+include: [base.yaml]
+
+properties:
+  reg:
+    required: true
+  clocks:
+    required: true
+  interrupts:
+    required: true

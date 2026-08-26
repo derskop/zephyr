@@ -514,6 +514,7 @@ nordic	Nordic Semiconductor
 norik	Norik Systems
 noritake	Noritake Co., Inc. Electronics Division
 novtech	NovTech, Inc.
+nsing	Nations Technologies Inc.
 nuclei	Nuclei System Technology
 nucode	NUCODE Co., Ltd. (nuworks.io)
 nutsboard	NutsBoard

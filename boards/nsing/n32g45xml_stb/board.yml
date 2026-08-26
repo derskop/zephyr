@@ -1,0 +1,6 @@
+board:
+  name: n32g45xml_stb
+  full_name: N32G45X Discovery
+  vendor: nsing
+  socs:
+    - name: n32g457

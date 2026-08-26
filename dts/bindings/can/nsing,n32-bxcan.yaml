@@ -1,0 +1,18 @@
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: Nations Technologies N32 bxCAN controller
+
+compatible: "nsing,n32-bxcan"
+
+include: [can-controller.yaml, pinctrl-device.yaml]
+
+properties:
+  reg:
+    required: true
+
+  clocks:
+    required: true
+
+  interrupts:
+    required: true

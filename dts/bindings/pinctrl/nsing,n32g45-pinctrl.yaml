@@ -1,0 +1,23 @@
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: Nations Technologies N32G45 pin controller
+
+compatible: "nsing,n32g45-pinctrl"
+
+include: [base.yaml]
+
+properties:
+  reg:
+    required: true
+
+child-binding:
+  description: N32 pin configuration state
+  properties:
+    pinmux:
+      type: int
+      required: true
+    remap:
+      type: int
+      required: false
+      description: Full GPIO_RMP_xxx remap value; omit when no remap

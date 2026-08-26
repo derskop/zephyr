@@ -1,0 +1,622 @@
+/*
+ * Copyright (c) 2024 Nations Technologies
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * N32G45x SoC 设备树 —— 按 modules/hal/nsing 外设定义补全。
+ *
+ * 外设基址 / 中断号均来自 HAL 的 n32g45x.h，时钟位来自 n32_clock.h。
+ * 已补全：I2C1~4, SPI1~3, ADC1~4, TIM1~8, DMA1~2, DAC, CAN1~2,
+ *         RTC, SDIO, DVP, ETH, QSPI, IWDG, WWDG, BKP, PWR, CRC,
+ *         EXTI, COMP, OPAMP, TSC, RCC, FLASH, SRAM, GPIOA~G, USART/UART。
+ *
+ * 注意：TIM/DMA/RTC/SDIO/DVP/ETH/QSPI/IWDG/WWDG/BKP/PWR/CRC/EXTI/COMP/OPAMP/TSC
+ *       等外设暂无 Zephyr 驱动，已用块注释暂时注释掉，后续补驱动再启用。
+ */
+
+#include <mem.h>
+#include <freq.h>
+#include <arm/armv7-m.dtsi>
+#include <zephyr/dt-bindings/gpio/gpio.h>
+#include <zephyr/dt-bindings/i2c/i2c.h>
+#include <zephyr/dt-bindings/clock/n32_clock.h>
+#include <zephyr/dt-bindings/pinctrl/n32-pinctrl.h>
+
+/ {
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			device_type = "cpu";
+			compatible = "arm,cortex-m4f";
+			reg = <0>;
+		};
+	};
+
+	clocks {
+		clk_hse: clk-hse {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <DT_FREQ_M(8)>;
+			status = "disabled";
+		};
+
+		clk_hsi: clk-hsi {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <DT_FREQ_M(8)>;
+			status = "disabled";
+		};
+
+		clk_lse: clk-lse {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <32768>;
+			status = "disabled";
+		};
+
+		clk_lsi: clk-lsi {
+			#clock-cells = <0>;
+			compatible = "fixed-clock";
+			clock-frequency = <DT_FREQ_K(40)>;
+			status = "disabled";
+		};
+
+		pll: pll {
+			#clock-cells = <0>;
+			compatible = "nsing,n32-pll-clock";
+			status = "disabled";
+		};
+	};
+
+	soc {
+		rcc: rcc@40021000 {
+			compatible = "nsing,n32-rcc";
+			#clock-cells = <1>;
+			reg = <0x40021000 0x400>;
+		};
+
+		sram0: memory@20000000 {
+			compatible = "mmio-sram";
+			reg = <0x20000000 DT_SIZE_K(144)>;
+		};
+
+		flash: flash-controller@40022000 {
+			compatible = "nsing,n32-flash-controller";
+			reg = <0x40022000 0x400>;
+			interrupts = <4 0>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			flash0: flash@8000000 {
+				compatible = "soc-nv-flash";
+				reg = <0x08000000 0x80000>;
+				write-block-size = <2>;
+				erase-block-size = <2>;
+			};
+		};
+
+		pinctrl: pin-controller@40010800 {
+			compatible = "nsing,n32g45-pinctrl";
+			reg = <0x40010800 0x1800>;
+			#address-cells = <1>;
+			#size-cells = <1>;
+
+			gpioa: gpio@40010800 {
+				compatible = "nsing,n32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x40010800 0x400>;
+				clocks = <&rcc N32_CLOCK_GPIOA>;
+				status = "disabled";
+			};
+
+			gpiob: gpio@40010c00 {
+				compatible = "nsing,n32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x40010c00 0x400>;
+				clocks = <&rcc N32_CLOCK_GPIOB>;
+				status = "disabled";
+			};
+
+			gpioc: gpio@40011000 {
+				compatible = "nsing,n32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x40011000 0x400>;
+				clocks = <&rcc N32_CLOCK_GPIOC>;
+				status = "disabled";
+			};
+
+			gpiod: gpio@40011400 {
+				compatible = "nsing,n32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x40011400 0x400>;
+				clocks = <&rcc N32_CLOCK_GPIOD>;
+				status = "disabled";
+			};
+
+			gpioe: gpio@40011800 {
+				compatible = "nsing,n32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x40011800 0x400>;
+				clocks = <&rcc N32_CLOCK_GPIOE>;
+				status = "disabled";
+			};
+
+			gpiof: gpio@40011c00 {
+				compatible = "nsing,n32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x40011c00 0x400>;
+				clocks = <&rcc N32_CLOCK_GPIOF>;
+				status = "disabled";
+			};
+
+			gpiog: gpio@40012000 {
+				compatible = "nsing,n32-gpio";
+				gpio-controller;
+				#gpio-cells = <2>;
+				reg = <0x40012000 0x400>;
+				clocks = <&rcc N32_CLOCK_GPIOG>;
+				status = "disabled";
+			};
+		};
+
+		usart1: uart@40013800 {
+			compatible = "nsing,n32-uart";
+			reg = <0x40013800 0x400>;
+			clocks = <&rcc N32_CLOCK_USART1>;
+			interrupts = <37 0>;
+			status = "disabled";
+		};
+
+		usart2: uart@40004400 {
+			compatible = "nsing,n32-uart";
+			reg = <0x40004400 0x400>;
+			clocks = <&rcc N32_CLOCK_USART2>;
+			interrupts = <38 0>;
+			status = "disabled";
+		};
+
+		usart3: uart@40004800 {
+			compatible = "nsing,n32-uart";
+			reg = <0x40004800 0x400>;
+			clocks = <&rcc N32_CLOCK_USART3>;
+			interrupts = <39 0>;
+			status = "disabled";
+		};
+
+		uart4: uart@40004c00 {
+			compatible = "nsing,n32-uart";
+			reg = <0x40004c00 0x400>;
+			clocks = <&rcc N32_CLOCK_UART4>;
+			interrupts = <52 0>;
+			status = "disabled";
+		};
+
+		uart5: uart@40005000 {
+			compatible = "nsing,n32-uart";
+			reg = <0x40005000 0x400>;
+			clocks = <&rcc N32_CLOCK_UART5>;
+			interrupts = <53 0>;
+			status = "disabled";
+		};
+
+		uart6: uart@40015000 {
+			compatible = "nsing,n32-uart";
+			reg = <0x40015000 0x400>;
+			clocks = <&rcc N32_CLOCK_UART6>;
+			interrupts = <74 0>;
+			status = "disabled";
+		};
+
+		uart7: uart@40015400 {
+			compatible = "nsing,n32-uart";
+			reg = <0x40015400 0x400>;
+			clocks = <&rcc N32_CLOCK_UART7>;
+			interrupts = <75 0>;
+			status = "disabled";
+		};
+
+		i2c1: i2c@40005400 {
+			compatible = "nsing,n32-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40005400 0x400>;
+			clocks = <&rcc N32_CLOCK_I2C1>;
+			interrupts = <31 0>, <32 0>;
+			interrupt-names = "event", "error";
+			status = "disabled";
+		};
+
+		i2c2: i2c@40005800 {
+			compatible = "nsing,n32-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40005800 0x400>;
+			clocks = <&rcc N32_CLOCK_I2C2>;
+			interrupts = <33 0>, <34 0>;
+			interrupt-names = "event", "error";
+			status = "disabled";
+		};
+
+		i2c3: i2c@40014400 {
+			compatible = "nsing,n32-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40014400 0x400>;
+			clocks = <&rcc N32_CLOCK_I2C3>;
+			interrupts = <70 0>, <71 0>;
+			interrupt-names = "event", "error";
+			status = "disabled";
+		};
+
+		i2c4: i2c@40014800 {
+			compatible = "nsing,n32-i2c";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40014800 0x400>;
+			clocks = <&rcc N32_CLOCK_I2C4>;
+			interrupts = <72 0>, <73 0>;
+			interrupt-names = "event", "error";
+			status = "disabled";
+		};
+
+		spi1: spi@40013000 {
+			compatible = "nsing,n32-spi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40013000 0x400>;
+			clocks = <&rcc N32_CLOCK_SPI1>;
+			interrupts = <35 5>;
+			status = "disabled";
+		};
+
+		spi2: spi@40003800 {
+			compatible = "nsing,n32-spi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40003800 0x400>;
+			clocks = <&rcc N32_CLOCK_SPI2>;
+			interrupts = <36 0>;
+			status = "disabled";
+		};
+
+		spi3: spi@40003c00 {
+			compatible = "nsing,n32-spi";
+			#address-cells = <1>;
+			#size-cells = <0>;
+			reg = <0x40003c00 0x400>;
+			clocks = <&rcc N32_CLOCK_SPI3>;
+			interrupts = <51 0>;
+			status = "disabled";
+		};
+
+		adc1: adc@40020800 {
+			compatible = "nsing,n32-adc";
+			reg = <0x40020800 0x400>;
+			clocks = <&rcc N32_CLOCK_ADC1>;
+			interrupts = <18 0>;
+			#io-channel-cells = <1>;
+			channels = <16>;
+			status = "disabled";
+		};
+
+		adc2: adc@40020c00 {
+			compatible = "nsing,n32-adc";
+			reg = <0x40020c00 0x400>;
+			clocks = <&rcc N32_CLOCK_ADC2>;
+			interrupts = <18 0>;
+			#io-channel-cells = <1>;
+			channels = <16>;
+			status = "disabled";
+		};
+
+		adc3: adc@40021800 {
+			compatible = "nsing,n32-adc";
+			reg = <0x40021800 0x400>;
+			clocks = <&rcc N32_CLOCK_ADC3>;
+			interrupts = <47 0>;
+			#io-channel-cells = <1>;
+			channels = <16>;
+			status = "disabled";
+		};
+
+		adc4: adc@40021c00 {
+			compatible = "nsing,n32-adc";
+			reg = <0x40021c00 0x400>;
+			clocks = <&rcc N32_CLOCK_ADC4>;
+			interrupts = <47 0>;
+			#io-channel-cells = <1>;
+			channels = <16>;
+			status = "disabled";
+		};
+
+		dac1: dac1@40007400 {
+			compatible = "nsing,n32-dac";
+			reg = <0x40007400 0x400>;
+			clocks = <&rcc N32_CLOCK_DAC>;
+			num-channels = <2>;
+			#io-channel-cells = <1>;
+			status = "disabled";
+
+		};
+
+		/* ---- 定时器（需补 binding nsing,n32-tim） ---- */
+
+/*
+		tim1: tim@40012c00 {
+			compatible = "nsing,n32-tim";	
+			reg = <0x40012c00 0x400>;
+			clocks = <&rcc N32_CLOCK_TIM1>;
+			interrupts = <25 0>, <24 0>, <26 0>, <27 0>;
+			interrupt-names = "up", "brk", "trg_com", "cc";
+			status = "disabled";
+		};
+*/
+
+/*
+		tim2: tim@40000000 {
+			compatible = "nsing,n32-tim";	
+			reg = <0x40000000 0x400>;
+			clocks = <&rcc N32_CLOCK_TIM2>;
+			interrupts = <28 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		tim3: tim@40000400 {
+			compatible = "nsing,n32-tim";	
+			reg = <0x40000400 0x400>;
+			clocks = <&rcc N32_CLOCK_TIM3>;
+			interrupts = <29 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		tim4: tim@40000800 {
+			compatible = "nsing,n32-tim";	
+			reg = <0x40000800 0x400>;
+			clocks = <&rcc N32_CLOCK_TIM4>;
+			interrupts = <30 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		tim5: tim@40000c00 {
+			compatible = "nsing,n32-tim";	
+			reg = <0x40000c00 0x400>;
+			clocks = <&rcc N32_CLOCK_TIM5>;
+			interrupts = <50 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		tim6: tim@40001000 {
+			compatible = "nsing,n32-tim";	
+			reg = <0x40001000 0x400>;
+			clocks = <&rcc N32_CLOCK_TIM6>;
+			interrupts = <54 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		tim7: tim@40001400 {
+			compatible = "nsing,n32-tim";	
+			reg = <0x40001400 0x400>;
+			clocks = <&rcc N32_CLOCK_TIM7>;
+			interrupts = <55 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		tim8: tim@40013400 {
+			compatible = "nsing,n32-tim";	
+			reg = <0x40013400 0x400>;
+			clocks = <&rcc N32_CLOCK_TIM8>;
+			interrupts = <44 0>, <43 0>, <45 0>, <46 0>;
+			interrupt-names = "up", "brk", "trg_com", "cc";
+			status = "disabled";
+		};
+*/
+
+		/* ---- DMA（需补 binding nsing,n32-dma） ---- */
+
+/*
+		dma1: dma@40020000 {
+			compatible = "nsing,n32-dma";	
+			reg = <0x40020000 0x400>;
+			clocks = <&rcc N32_CLOCK_DMA1>;
+			
+			interrupts = <11 0>, <12 0>, <13 0>, <14 0>, <15 0>, <16 0>, <17 0>, <76 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		dma2: dma@40020400 {
+			compatible = "nsing,n32-dma";	
+			reg = <0x40020400 0x400>;
+			clocks = <&rcc N32_CLOCK_DMA2>;
+			
+			interrupts = <56 0>, <57 0>, <58 0>, <59 0>, <60 0>, <68 0>, <69 0>, <77 0>;
+			status = "disabled";
+		};
+*/
+
+		/* ---- 其它外设（均需补 binding） ---- */
+
+/*
+		rtc: rtc@40002800 {
+			compatible = "nsing,n32-rtc";	
+			reg = <0x40002800 0x400>;
+			interrupts = <3 0>;
+			
+			status = "disabled";
+		};
+*/
+
+/*
+		sdio: sdio@40018000 {
+			compatible = "nsing,n32-sdio";	
+			reg = <0x40018000 0x400>;
+			clocks = <&rcc N32_CLOCK_SDIO>;
+			interrupts = <49 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		dvp: dvp@40014c00 {
+			compatible = "nsing,n32-dvp";	
+			reg = <0x40014c00 0x400>;
+			clocks = <&rcc N32_CLOCK_DVP>;
+			interrupts = <78 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		eth: eth@40028000 {
+			compatible = "nsing,n32-eth";	
+			reg = <0x40028000 0x400>;
+			clocks = <&rcc N32_CLOCK_ETH>;
+			interrupts = <61 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		qspi: qspi@a0001000 {
+			compatible = "nsing,n32-qspi";	
+			reg = <0xa0001000 0x400>;
+			clocks = <&rcc N32_CLOCK_QSPI>;
+			interrupts = <67 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		iwdg: iwdg@40003000 {
+			compatible = "nsing,n32-iwdg";	
+			reg = <0x40003000 0x400>;
+			
+			status = "disabled";
+		};
+*/
+
+/*
+		wwdg: wwdg@40002c00 {
+			compatible = "nsing,n32-wwdg";	
+			reg = <0x40002c00 0x400>;
+			clocks = <&rcc N32_CLOCK_WWDG>;
+			interrupts = <0 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		bkp: bkp@40006c00 {
+			compatible = "nsing,n32-bkp";	
+			reg = <0x40006c00 0x400>;
+			clocks = <&rcc N32_CLOCK_BKP>;
+			status = "disabled";
+		};
+*/
+
+/*
+		pwr: pwr@40007000 {
+			compatible = "nsing,n32-pwr";	
+			reg = <0x40007000 0x400>;
+			clocks = <&rcc N32_CLOCK_PWR>;
+			status = "disabled";
+		};
+*/
+
+/*
+		crc: crc@40023000 {
+			compatible = "nsing,n32-crc";	
+			reg = <0x40023000 0x400>;
+			clocks = <&rcc N32_CLOCK_CRC>;
+			status = "disabled";
+		};
+*/
+
+		/* EXTI 与 AFIO 共用时钟，直接挂在 APB2 上 */
+/*
+		exti: exti@40010400 {
+			compatible = "nsing,n32-exti";	
+			reg = <0x40010400 0x400>;
+			interrupts = <6 0>, <7 0>, <8 0>, <9 0>, <10 0>, <23 0>, <40 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		comp: comp@40002400 {
+			compatible = "nsing,n32-comp";	
+			reg = <0x40002400 0x400>;
+			clocks = <&rcc N32_CLOCK_COMP>;
+			interrupts = <82 0>;
+			status = "disabled";
+		};
+*/
+
+/*
+		opamp: opamp@40002000 {
+			compatible = "nsing,n32-opamp";	
+			reg = <0x40002000 0x400>;
+			clocks = <&rcc N32_CLOCK_OPAMP>;
+			status = "disabled";
+		};
+*/
+
+/*
+		tsc: tsc@40003400 {
+			compatible = "nsing,n32-tsc";	
+			reg = <0x40003400 0x400>;
+			clocks = <&rcc N32_CLOCK_TSC>;
+			interrupts = <81 0>;
+			status = "disabled";
+		};
+*/
+
+		can1: can@40006400 {
+			compatible = "nsing,n32-bxcan";
+			reg = <0x40006400 0x400>;
+			clocks = <&rcc N32_CLOCK_CAN1>;
+			interrupts = <20 0>, <19 0>, <22 0>;
+			interrupt-names = "rx", "tx", "sce";
+			sample-point = <875>;
+			#io-channel-cells = <1>;
+			status = "disabled";
+		};
+
+		can2: can@40006800 {
+			compatible = "nsing,n32-bxcan";
+			reg = <0x40006800 0x400>;
+			clocks = <&rcc N32_CLOCK_CAN2>;
+			interrupts = <64 0>, <63 0>, <66 0>;
+			bitrate = <500000>;
+			#io-channel-cells = <1>;
+			status = "disabled";
+		};
+
+
+	};
+};
+
+&nvic {
+	arm,num-irq-priority-bits = <4>;
+};

@@ -1,0 +1,13 @@
+# Copyright (c) 2023, Quincy.W <wangqyfm@foxmail.com>
+# SPDX-License-Identifier: Apache-2.0
+
+config UART_N32
+	bool "N32 MCU uart driver"
+	default y
+	depends on SERIAL
+	depends on SOC_FAMILY_NSING_N32
+	select SERIAL_HAS_DRIVER
+	select USE_NSING_USART
+   # select SERIAL_SUPPORT_INTERRUPT
+	help
+	  This option enables the UART driver for N32 family of processors.

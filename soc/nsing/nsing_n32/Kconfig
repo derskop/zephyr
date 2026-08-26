@@ -1,0 +1,26 @@
+# Nations Technologies N32 SoC family
+
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+# 家族符号：Nations N32 全家族（N32G45x / N32H78x 等）
+config SOC_FAMILY_NSING_N32
+	select BUILD_OUTPUT_HEX
+
+if SOC_FAMILY_NSING_N32
+
+# 递归加载所有系列的 Kconfig（能力表）：n32g45x/Kconfig、n32h78x/Kconfig…
+rsource "*/Kconfig"
+
+# 家族级公共选项放这里（所有 N32 系列共用的配置）。
+# 采用 Zephyr 标准模式：隐藏的 HAS_XXX（能力标志）→ 可见的 XXX（用户选项）。
+#
+# 例：
+#   config HAS_N32_FLASH_PREFETCH
+#   	bool
+#   config N32_FLASH_PREFETCH
+#   	bool "Flash prefetch buffer"
+#   	default y
+#   	depends on HAS_N32_FLASH_PREFETCH
+
+endif # SOC_FAMILY_NSING_N32

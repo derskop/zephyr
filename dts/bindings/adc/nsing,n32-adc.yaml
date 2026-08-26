@@ -1,0 +1,40 @@
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: Nations Technologies N32 ADC
+
+compatible: "nsing,n32-adc"
+
+include: [adc-controller.yaml, pinctrl-device.yaml]
+
+properties:
+  reg:
+    required: true
+
+  clocks:
+    required: true
+
+  pinctrl-0:
+    type: phandles
+    required: false
+    description: |
+        GPIO pin configuration for ADC input. The phandles are
+        expected to reference pinctrl nodes, e.g.
+           pinctrl-0 = <&adc1_channel_01_pa0 &adc1_channel_02_pa1>;
+
+  interrupts:
+    required: true
+
+  "#io-channel-cells":
+    const: 1
+      
+  pinctrl-names:
+    required: true  
+      
+  channels:
+    type: int
+    description: Number of external channels
+    required: true   
+
+io-channel-cells:
+    - input
