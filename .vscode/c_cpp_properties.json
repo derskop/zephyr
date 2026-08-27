@@ -1,0 +1,12 @@
+{
+  "version": 4,
+  "configurations": [
+    {
+      "name": "Zephyr N32G45x",
+      "compilerPath": "${workspaceFolder}/../zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gcc",
+      "cStandard": "c11",
+      "intelliSenseMode": "gcc-arm",
+      "compileCommands": "${workspaceFolder}/build/compile_commands.json"
+    }
+  ]
+}

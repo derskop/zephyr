@@ -1,0 +1,50 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "N32G45xML-STB: J-Link Launch and Load ELF",
+      "type": "cortex-debug",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/zephyr/zephyr.elf",
+      "servertype": "jlink",
+      "serverpath": "/usr/bin/JLinkGDBServer",
+      "device": "N32G457ME",
+      "interface": "swd",
+      "serverArgs": [
+        "-speed",
+        "1000"
+      ],
+      "gdbPath": "${workspaceFolder}/../zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb",
+      "objdumpPath": "/usr/bin/objdump",
+      "nmPath": "/usr/bin/nm",
+      "preLaunchTask": "build",
+      "runToEntryPoint": "main",
+      "preLaunchCommands": [
+        "monitor reset halt"
+      ]
+    },
+    {
+      "name": "N32G45xML-STB: J-Link Attach to Pre-Flashed Target",
+      "type": "cortex-debug",
+      "request": "attach",
+      "cwd": "${workspaceFolder}",
+      "executable": "${workspaceFolder}/build/zephyr/zephyr.elf",
+      "servertype": "jlink",
+      "serverpath": "/usr/bin/JLinkGDBServer",
+      "device": "N32G457ME",
+      "interface": "swd",
+      "serverArgs": [
+        "-speed",
+        "1000"
+      ],
+      "gdbPath": "${workspaceFolder}/../zephyr-sdk-1.0.1/gnu/arm-zephyr-eabi/bin/arm-zephyr-eabi-gdb",
+      "objdumpPath": "/usr/bin/objdump",
+      "nmPath": "/usr/bin/nm",
+      "preLaunchTask": "build",
+      "postAttachCommands": [
+        "monitor halt"
+      ]
+    }
+  ]
+}

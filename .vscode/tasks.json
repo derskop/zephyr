@@ -1,0 +1,34 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build",
+      "type": "shell",
+      "command": "export ZEPHYR_SDK_INSTALL_DIR=/home/nsing/zephyr-sdk-1.0.1 && /home/nsing/zephyrproject/.venv/bin/west build -b n32g45xml_stb zephyr/samples/basic/blinky -d build",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "flash (J-Link)",
+      "type": "shell",
+      "command": "bash",
+      "args": [
+        "-lc",
+        "printf 'r\\nloadfile build/zephyr/zephyr.hex\\nr\\ng\\nq\\n' | JLinkExe -device N32G457ME -if SWD -speed 1000 -AutoConnect 1 -ExitOnError 1"
+      ],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "dependsOn": [
+        "build"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}
