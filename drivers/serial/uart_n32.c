@@ -26,68 +26,6 @@
 #include <zephyr/irq.h>
 #define DT_DRV_COMPAT nsing_n32_uart
 
-
-
-#if 0
-
-struct device {
-	/** Name of the device instance */
-	const char *name;
-	/** Address of device instance config information */
-	const void *config;
-	/** Address of the API structure exposed by the device instance */
-	const void *api;
-	/** Address of the common device state */
-	struct device_state *state;
-	/** Address of the device instance private data */
-	void *data;
-
-};
-
-
-
-/** Pin control state configuration. */
-struct pinctrl_state {
-	/** Pin configurations. */
-	const pinctrl_soc_pin_t *pins;
-	/** Number of pin configurations. */
-	uint8_t pin_cnt;
-	/** State identifier (see @ref PINCTRL_STATES). */
-	uint8_t id;
-};
-
-
-/** Pin controller configuration for a given device. */
-struct pinctrl_dev_config {
-#if defined(CONFIG_PINCTRL_STORE_REG) || defined(__DOXYGEN__)
-	/**
-	 * Device address (only available if @kconfig{CONFIG_PINCTRL_STORE_REG}
-	 * is enabled).
-	 */
-	uintptr_t reg;
-#endif /* defined(CONFIG_PINCTRL_STORE_REG) || defined(__DOXYGEN__) */
-	/** List of state configurations. */
-	const struct pinctrl_state *states;
-	/** Number of state configurations. */
-	uint8_t state_cnt;
-};
-
-
-struct mm32_uart_config {
-	uint32_t reg_base;
-	uint32_t cctl_offset;
-	uint32_t cctl_mask;
-	const struct pinctrl_dev_config *pinctrl_config;
-};
-
-struct mm32_uart_data {
-	uint32_t data_bits;
-	uint32_t parity;
-	uint32_t stop_bits;
-	uint32_t baud_rate;
-};
-#endif
-
 struct uart_n32_config
 {
 	uint32_t reg_base;

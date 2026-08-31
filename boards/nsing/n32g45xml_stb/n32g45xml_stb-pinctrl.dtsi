@@ -1,38 +1,42 @@
-#include <nsing/n32g45x/n32g45x.dtsi>
-#include <zephyr/dt-bindings/pinctrl/n32-pinctrl.h>
+/*
+ * Copyright (c) 2024 Nations Technologies Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
+#include <zephyr/dt-bindings/pinctrl/n32g45x-pinctrl.h>
 
 &pinctrl {
+	/* USART1, default mapping (PA9/PA10) */
+	usart1_tx_pa9: usart1_tx_pa9 {
+		pinmux = <N32G45X_PINMUX('A', 9, ALTERNATE, USART1_REMAP0)>;
+		slew-rate = "50mhz";
+	};
 
-    usart1_tx_pa9: usart1_tx_pa9 {
-        pinmux = <N32_PINMUX(N32_PORT_A, 9, AF_PP, SLEW_RATE_50MHZ)>;
+	usart1_rx_pa10: usart1_rx_pa10 {
+		pinmux = <N32G45X_PINMUX('A', 10, GPIO_IN, NO_REMAP)>;
+		bias-pull-up;
+	};
 
-    };
+	/* I2C1, default mapping (PB6/PB7) */
+	i2c1_scl_pb6: i2c1_scl_pb6 {
+		pinmux = <N32G45X_PINMUX('B', 6, ALTERNATE, I2C1_REMAP0)>;
+		drive-open-drain;
+	};
 
-    usart1_rx_pa10: usart1_rx_pa10 {
-        pinmux = <N32_PINMUX(N32_PORT_A, 10, IN_FLOATING, SLEW_RATE_50MHZ)>;
+	i2c1_sda_pb7: i2c1_sda_pb7 {
+		pinmux = <N32G45X_PINMUX('B', 7, ALTERNATE, I2C1_REMAP0)>;
+		drive-open-drain;
+	};
 
-    };
+	/* I2C1, remapped to PB8/PB9 */
+	i2c1_scl_pb8: i2c1_scl_pb8 {
+		pinmux = <N32G45X_PINMUX('B', 8, ALTERNATE, I2C1_REMAP1)>;
+		drive-open-drain;
+	};
 
-    i2c1_scl_pb6: i2c1_scl_pb6 {
-        pinmux = <N32_PINMUX(N32_PORT_B, 6, AF_OD, SLEW_RATE_2MHZ)>;
-
-    };
-
-    i2c1_sda_pb7: i2c1_sda_pb7 {
-        pinmux = <N32_PINMUX(N32_PORT_B, 7, AF_OD, SLEW_RATE_2MHZ)>;
-
-    };
-
-    i2c1_scl_pb8: i2c1_scl_pb8 {
-        pinmux = <N32_PINMUX(N32_PORT_B, 8, AF_OD, SLEW_RATE_2MHZ)>;
-        remap = <N32_RMP_I2C1>;
-    };
-
-    i2c1_sda_pb9: i2c1_sda_pb9 {
-        pinmux = <N32_PINMUX(N32_PORT_B, 9, AF_OD, SLEW_RATE_2MHZ)>;
-        remap = <N32_RMP_I2C1>;
-    };
-
-
+	i2c1_sda_pb9: i2c1_sda_pb9 {
+		pinmux = <N32G45X_PINMUX('B', 9, ALTERNATE, I2C1_REMAP1)>;
+		drive-open-drain;
+	};
 };
