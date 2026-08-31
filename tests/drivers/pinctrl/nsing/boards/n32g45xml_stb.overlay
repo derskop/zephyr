@@ -1,0 +1,65 @@
+/*
+ * Copyright (c) 2024 Nations Technologies Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/pinctrl/n32g45x-pinctrl.h>
+
+/*
+ * Test pins are chosen to not conflict with board resources:
+ * USART1 on PA9/PA10, I2C1 on PB6/PB7, LEDs on PA8/PB4/PB5, SWD on PA13-15.
+ */
+/ {
+	test_device: test_device {
+		compatible = "vnd,pinctrl-device";
+		pinctrl-0 = <&test_alt_fast_pa0 &test_in_pullup_pb1
+			     &test_in_pulldown_pc2 &test_out_high_pa3
+			     &test_alt_od_pb4 &test_analog_pc5
+			     &test_out_od_low_pa6 &test_alt_remap_pb8>;
+		pinctrl-names = "default";
+	};
+};
+
+&pinctrl {
+	test_alt_fast_pa0: test_alt_fast_pa0 {
+		pinmux = <N32G45X_PINMUX('A', 0, ALTERNATE, NO_REMAP)>;
+		slew-rate = "50mhz";
+	};
+
+	test_in_pullup_pb1: test_in_pullup_pb1 {
+		pinmux = <N32G45X_PINMUX('B', 1, GPIO_IN, NO_REMAP)>;
+		bias-pull-up;
+	};
+
+	test_in_pulldown_pc2: test_in_pulldown_pc2 {
+		pinmux = <N32G45X_PINMUX('C', 2, GPIO_IN, NO_REMAP)>;
+		bias-pull-down;
+	};
+
+	test_out_high_pa3: test_out_high_pa3 {
+		pinmux = <N32G45X_PINMUX('A', 3, GPIO_OUT, NO_REMAP)>;
+		output-high;
+	};
+
+	test_alt_od_pb4: test_alt_od_pb4 {
+		pinmux = <N32G45X_PINMUX('B', 4, ALTERNATE, NO_REMAP)>;
+		drive-open-drain;
+		slew-rate = "10mhz";
+	};
+
+	test_analog_pc5: test_analog_pc5 {
+		pinmux = <N32G45X_PINMUX('C', 5, ANALOG, NO_REMAP)>;
+	};
+
+	test_out_od_low_pa6: test_out_od_low_pa6 {
+		pinmux = <N32G45X_PINMUX('A', 6, GPIO_OUT, NO_REMAP)>;
+		drive-open-drain;
+		output-low;
+	};
+
+	test_alt_remap_pb8: test_alt_remap_pb8 {
+		pinmux = <N32G45X_PINMUX('B', 8, ALTERNATE, I2C1_REMAP1)>;
+		drive-open-drain;
+	};
+};
