@@ -1,4 +1,4 @@
-# Copyright (c) 2016 Linaro Limited.
+# Copyright (c) 2024 Nations Technologies Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 config BOARD_N32G45XML_STB

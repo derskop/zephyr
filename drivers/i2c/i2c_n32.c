@@ -11,7 +11,6 @@
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/pinctrl.h>
 
-#include <zephyr/dt-bindings/pinctrl/n32-pinctrl.h>
 #include <zephyr/drivers/clock_control/n32_clock_control.h>
 
 #include <n32g45x_i2c.h>
