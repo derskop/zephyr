@@ -50,7 +50,23 @@ typedef uint32_t pinctrl_soc_pin_t;
 #define N32_CNFMODE_INPUT_FLOAT 0x4U
 #define N32_CNFMODE_INPUT_PUPD  0x8U
 
-/* PMODE values */
+/*
+ * PMODE values.
+ *
+ * NOTE - conflicting references:
+ *   - AFIO reference manual (CN_UM_N32G45x_AFIO_V0, "IO mode and
+ *     configuration table"): PMODE 01 = max 10MHz, 10 = max 2MHz,
+ *     11 = max 50MHz (same encoding as STM32F1).
+ *   - Nations SDK (n32g45x_gpio.h GPIO_SpeedType): GPIO_Speed_2MHz = 1,
+ *     GPIO_Speed_10MHz = 2, GPIO_Speed_50MHz = 3 - the 2MHz/10MHz values
+ *     are swapped relative to the manual.
+ *   The values below follow the official SDK so the Zephyr layer stays
+ *   consistent with the rest of the SDK ecosystem. Verify the actual
+ *   slew rate on silicon (e.g. by measuring the output toggle frequency)
+ *   before changing these; if the manual turns out to be correct, swap
+ *   N32_PMODE_2MHZ and N32_PMODE_10MHZ and the slew-rate lookup below
+ *   follows automatically.
+ */
 #define N32_PMODE_2MHZ  0x1U
 #define N32_PMODE_10MHZ 0x2U
 #define N32_PMODE_50MHZ 0x3U
@@ -81,11 +97,18 @@ typedef uint32_t pinctrl_soc_pin_t;
 	 (DT_PROP_OR(node_id, bias_pull_down, 0) ?                          \
 		N32_CNFMODE_INPUT_PUPD : N32_CNFMODE_INPUT_FLOAT))
 
-/* Output/alternate modes: slew-rate selects PMODE, drive-open-drain PCFG. */
+/* Output/alternate modes: slew-rate selects PMODE, drive-open-drain PCFG.
+ * Slew-rate enum order comes from nsing,n32g45-pinctrl.yaml:
+ * "2mhz" = 0, "10mhz" = 1, "50mhz" = 2.
+ */
+#define N32G45X_SLEW_RATE_TO_PMODE(idx)                                    \
+	((idx) == 0U ? N32_PMODE_2MHZ :                                    \
+	 (idx) == 1U ? N32_PMODE_10MHZ : N32_PMODE_50MHZ)
+
 #define N32G45X_GET_OUTPUT_CNFMODE(node_id, is_alt)                        \
 	((is_alt ? N32_PCFG_AF_PP : N32_PCFG_GP_PP) |                       \
 	 (DT_PROP_OR(node_id, drive_open_drain, 0) ? N32_PCFG_GP_OD : 0U) | \
-	 (DT_ENUM_IDX(node_id, slew_rate) + N32_PMODE_2MHZ))
+	 N32G45X_SLEW_RATE_TO_PMODE(DT_ENUM_IDX(node_id, slew_rate)))
 
 /* Output initial level via POD. */
 #define N32G45X_GET_POD(node_id)                                           \

@@ -45,11 +45,13 @@ ZTEST(gpio_nsing, test_flags_config)
 				      GPIO_OUTPUT | GPIO_OUTPUT_INIT_LOW));
 	zassert_equal((GPIOA->POD >> TEST_OUT_PIN) & 0x1, 0);
 
-	/* Open-drain output */
+	/* Open-drain output: the driver uses 50MHz (PMODE = 11) for output
+	 * modes, same as push-pull, so the field is PCFG=01|PMODE=11 = 0x7.
+	 */
 	zassert_ok(gpio_pin_configure(GPIO_DEV, TEST_OD_PIN,
 				      GPIO_OUTPUT | GPIO_SINGLE_ENDED |
 				      GPIO_LINE_OPEN_DRAIN));
-	zassert_equal((GPIOA->PL_CFG >> (TEST_OD_PIN * 4)) & 0xF, 0x5);
+	zassert_equal((GPIOA->PL_CFG >> (TEST_OD_PIN * 4)) & 0xF, 0x7);
 
 	/* Floating input */
 	zassert_ok(gpio_pin_configure(GPIO_DEV, TEST_IN_PIN, GPIO_INPUT));
@@ -70,9 +72,14 @@ ZTEST(gpio_nsing, test_flags_config)
 	zassert_ok(gpio_pin_configure(GPIO_DEV, TEST_IN_PIN, GPIO_DISCONNECTED));
 	zassert_equal((GPIOA->PL_CFG >> (TEST_IN_PIN * 4)) & 0xF, 0x0);
 
+	/* Input|Output is supported: configured as output, the input
+	 * sampler stays active in output mode on N32.
+	 */
+	zassert_ok(gpio_pin_configure(GPIO_DEV, TEST_OUT_PIN,
+				      GPIO_INPUT | GPIO_OUTPUT));
+	zassert_equal(GPIOA->PL_CFG & 0xF, 0x3);
+
 	/* Invalid flag combinations */
-	zassert_equal(gpio_pin_configure(GPIO_DEV, TEST_OUT_PIN,
-					 GPIO_INPUT | GPIO_OUTPUT), -ENOTSUP);
 	zassert_equal(gpio_pin_configure(GPIO_DEV, TEST_OUT_PIN,
 					 GPIO_INPUT | GPIO_PULL_UP |
 					 GPIO_PULL_DOWN), -ENOTSUP);

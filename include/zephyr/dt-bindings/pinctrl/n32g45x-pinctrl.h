@@ -103,6 +103,11 @@
 #define USART2_REMAP1     N32G45X_REMAP(1, 0, N32G45X_RMP_SPLIT, 3)
 #define USART2_REMAP2     N32G45X_REMAP(2, 0, N32G45X_RMP_SPLIT, 3)
 #define USART2_REMAP3     N32G45X_REMAP(3, 0, N32G45X_RMP_SPLIT, 3)
+/* USART3: the manual table is 00 = no remap (PB10/11/12/13/14),
+ * 01 = partial (PC10/11/12), 10 = unused combination, 11 = full
+ * (PD8..PD12). The macros are named by remap option while the value
+ * carries the register encoding, so USART3_REMAP2 is value 3 - there is
+ * no value 2 because encoding 10 is unused. */
 #define USART3_REMAP0     N32G45X_REMAP(0, 1, N32G45X_RMP_CFG, 4)
 #define USART3_REMAP1     N32G45X_REMAP(1, 1, N32G45X_RMP_CFG, 4)
 #define USART3_REMAP2     N32G45X_REMAP(3, 1, N32G45X_RMP_CFG, 4)

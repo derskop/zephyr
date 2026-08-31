@@ -131,19 +131,46 @@ ZTEST(pinctrl_nsing, test_configure)
 
 ZTEST(pinctrl_nsing, test_remap_conflict)
 {
-	/* Two pins with different remap opcodes must be rejected */
+	/* Two pins sharing a remap field with different values must be
+	 * rejected: USART3_REMAP1 (value 1) vs USART3_REMAP2 (value 3),
+	 * both on RMP_CFG bits 5:4.
+	 */
 	static const pinctrl_soc_pin_t conflict[2] = {
 		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
-			N32G45X_PINMUX('B', 8, ALTERNATE, I2C1_REMAP1)) |
-			(N32_PCFG_AF_OD | N32_PMODE_2MHZ),
+			N32G45X_PINMUX('B', 8, ALTERNATE, USART3_REMAP1)) |
+			(N32_PCFG_AF_PP | N32_PMODE_2MHZ),
 		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
-			N32G45X_PINMUX('B', 9, ALTERNATE, USART1_REMAP1)) |
-			(N32_PCFG_AF_OD | N32_PMODE_2MHZ),
+			N32G45X_PINMUX('B', 9, ALTERNATE, USART3_REMAP2)) |
+			(N32_PCFG_AF_PP | N32_PMODE_2MHZ),
 	};
 
 	zassert_equal(pinctrl_configure_pins(conflict, ARRAY_SIZE(conflict),
 					     PINCTRL_REG_NONE),
 		      -EINVAL);
+}
+
+ZTEST(pinctrl_nsing, test_remap_multi_field)
+{
+	/* Different peripherals in one state may remap independently:
+	 * I2C1_REMAP1 (RMP_CFG bit 1) and USART1_REMAP1 (RMP_CFG bit 2)
+	 * coexist, both fields must end up set.
+	 */
+	static const pinctrl_soc_pin_t multi[2] = {
+		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
+			N32G45X_PINMUX('B', 8, ALTERNATE, I2C1_REMAP1)) |
+			(N32_PCFG_AF_OD | N32_PMODE_2MHZ),
+		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
+			N32G45X_PINMUX('B', 9, ALTERNATE, USART1_REMAP1)) |
+			(N32_PCFG_AF_PP | N32_PMODE_2MHZ),
+	};
+
+	zassert_ok(pinctrl_configure_pins(multi, ARRAY_SIZE(multi),
+					  PINCTRL_REG_NONE));
+	zassert_equal(AFIO->RMP_CFG & BIT(1), BIT(1));
+	zassert_equal(AFIO->RMP_CFG & BIT(2), BIT(2));
+
+	/* Restore the register for the following tests */
+	AFIO->RMP_CFG &= ~(BIT(1) | BIT(2));
 }
 
 ZTEST(pinctrl_nsing, test_remap_paths)

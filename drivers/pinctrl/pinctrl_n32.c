@@ -45,37 +45,115 @@ static int n32_afio_clock_enable(void)
 				(clock_control_subsys_t)&clkid);
 }
 
+/* Apply one remap field. reg is N32G45X_RMP_CFG/CFG3/CFG4 or RMP_SPLIT
+ * for the SPI1/USART2 fields whose bits are spread over two registers.
+ * w is the field width encoding (0 = 1 bit, 1 = 2 bits), so the field
+ * mask is (w + 1) bits starting at bit.
+ * Clear-then-set: applying a value 0 opcode resets the field to the
+ * default mapping.
+ */
+static int n32g45x_apply_remap(uint8_t reg, uint8_t bit, uint8_t w, uint8_t val)
+{
+	const uint32_t msk = ((uint32_t)w + 1U) << bit;
+
+	if (reg == N32G45X_RMP_CFG) {
+		/* SW_JTAG_CFG (bits 26:24) is documented as "read value
+		 * undefined" in the manual. The SDK guards it with
+		 * DBGAFR_SWJCFG_MASK (0xF0FFFFFF) in GPIO_ConfigPinRemap;
+		 * mask it out the same way so the RMW never writes the
+		 * undefined read-back value back into the SWJ field.
+		 */
+		const uint32_t swj_mask = 0xF0FFFFFFU;
+
+		AFIO->RMP_CFG = (AFIO->RMP_CFG & ~msk & swj_mask) |
+				((uint32_t)val << bit);
+	} else if (reg == N32G45X_RMP_CFG3) {
+		AFIO->RMP_CFG3 = (AFIO->RMP_CFG3 & ~msk) | ((uint32_t)val << bit);
+	} else if (reg == N32G45X_RMP_CFG4) {
+		AFIO->RMP_CFG4 = (AFIO->RMP_CFG4 & ~msk) | ((uint32_t)val << bit);
+	} else if (reg == N32G45X_RMP_SPLIT) {
+		if (bit == 0U) {
+			/* SPI1: bits split between RMP_CFG bit 0 and RMP_CFG3 bit 18 */
+			AFIO->RMP_CFG = (AFIO->RMP_CFG & ~BIT(0) & 0xF0FFFFFFU) |
+					((uint32_t)(val & 1U) << 0U);
+			AFIO->RMP_CFG3 = (AFIO->RMP_CFG3 & ~BIT(18)) |
+					 ((uint32_t)((val >> 1) & 1U) << 18U);
+		} else if (bit == 3U) {
+			/* USART2: bits split between RMP_CFG bit 3 and RMP_CFG3 bit 19 */
+			AFIO->RMP_CFG = (AFIO->RMP_CFG & ~BIT(3) & 0xF0FFFFFFU) |
+					((uint32_t)(val & 1U) << 3U);
+			AFIO->RMP_CFG3 = (AFIO->RMP_CFG3 & ~BIT(19)) |
+					 ((uint32_t)((val >> 1) & 1U) << 19U);
+		} else {
+			return -EINVAL;
+		}
+	} else {
+		return -EINVAL;
+	}
+
+	return 0;
+}
+
 /**
- * Apply the remap configuration shared by all pins of a state.
+ * Apply the remap configuration of a state.
  *
- * All pins of a state must agree on a single remap opcode, otherwise the
- * state is rejected with -EINVAL.
+ * Pins of a state may combine remaps of several peripherals: each distinct
+ * (register, bit) field is applied once. Pins sharing a field must agree
+ * on its value, otherwise the state is rejected with -EINVAL.
  */
 static int n32g45x_pins_remap(const pinctrl_soc_pin_t *pins, uint8_t pin_cnt)
 {
-	uint16_t remap = NO_REMAP;
+	/* One slot per distinct remap field. Far beyond any real board
+	 * configuration combines more remap fields in a single state.
+	 */
+#define N32_REMAP_SLOT_MAX 8U
+	uint16_t keys[N32_REMAP_SLOT_MAX];
+	uint8_t vals[N32_REMAP_SLOT_MAX];
+	uint8_t ws[N32_REMAP_SLOT_MAX];
+	uint8_t slots = 0U;
 	int ret;
 
+	/* Collect the distinct (register, bit) fields and their values */
 	for (uint8_t i = 0U; i < pin_cnt; i++) {
 		const uint16_t pin_rmp = FIELD_GET(N32_REMAP_Msk, pins[i]);
+		uint8_t j;
 
-		if (remap == NO_REMAP) {
-			remap = pin_rmp;
-		} else if (pin_rmp == NO_REMAP) {
+		if (pin_rmp == NO_REMAP) {
 			continue;
-		} else if (pin_rmp != remap) {
+		}
+
+		const uint16_t key = ((uint16_t)N32G45X_RM_REG_GET(pin_rmp) << 8U) |
+				     N32G45X_RM_BIT_GET(pin_rmp);
+		const uint8_t val = N32G45X_RM_VAL_GET(pin_rmp);
+		const uint8_t w = N32G45X_RM_W_GET(pin_rmp);
+
+		for (j = 0U; j < slots; j++) {
+			if (keys[j] == key) {
+				break;
+			}
+		}
+
+		if (j < slots) {
+			/* Same field: the value (and width) must agree */
+			if ((vals[j] != val) || (ws[j] != w)) {
+				return -EINVAL;
+			}
+			continue;
+		}
+
+		if (slots >= N32_REMAP_SLOT_MAX) {
 			return -EINVAL;
 		}
+
+		keys[slots] = key;
+		vals[slots] = val;
+		ws[slots] = w;
+		slots++;
 	}
 
-	if (remap == NO_REMAP) {
+	if (slots == 0U) {
 		return 0;
 	}
-
-	const uint8_t val = N32G45X_RM_VAL_GET(remap);
-	const uint8_t w = N32G45X_RM_W_GET(remap);
-	const uint8_t reg = N32G45X_RM_REG_GET(remap);
-	const uint8_t bit = N32G45X_RM_BIT_GET(remap);
 
 	/* The AFIO clock must be enabled before touching the remap registers. */
 	ret = n32_afio_clock_enable();
@@ -83,35 +161,12 @@ static int n32g45x_pins_remap(const pinctrl_soc_pin_t *pins, uint8_t pin_cnt)
 		return ret;
 	}
 
-	/* Clear-then-set the remap field: applying a REMAP0 opcode resets the
-	 * field to the default mapping.
-	 */
-	if (reg == N32G45X_RMP_CFG) {
-		const uint32_t msk = ((uint32_t)w + 1U) << bit;
-
-		AFIO->RMP_CFG = (AFIO->RMP_CFG & ~msk) | ((uint32_t)val << bit);
-	} else if (reg == N32G45X_RMP_CFG3) {
-		const uint32_t msk = ((uint32_t)w + 1U) << bit;
-
-		AFIO->RMP_CFG3 = (AFIO->RMP_CFG3 & ~msk) | ((uint32_t)val << bit);
-	} else if (reg == N32G45X_RMP_CFG4) {
-		const uint32_t msk = ((uint32_t)w + 1U) << bit;
-
-		AFIO->RMP_CFG4 = (AFIO->RMP_CFG4 & ~msk) | ((uint32_t)val << bit);
-	} else if (bit == 0U) {
-		/* SPI1: remap bits split between RMP_CFG bit 0 and RMP_CFG3 bit 18 */
-		AFIO->RMP_CFG = (AFIO->RMP_CFG & ~BIT(0)) |
-				((uint32_t)(val & 1U) << 0U);
-		AFIO->RMP_CFG3 = (AFIO->RMP_CFG3 & ~BIT(18)) |
-				 ((uint32_t)((val >> 1) & 1U) << 18U);
-	} else if (bit == 3U) {
-		/* USART2: remap bits split between RMP_CFG bit 3 and RMP_CFG3 bit 19 */
-		AFIO->RMP_CFG = (AFIO->RMP_CFG & ~BIT(3)) |
-				((uint32_t)(val & 1U) << 3U);
-		AFIO->RMP_CFG3 = (AFIO->RMP_CFG3 & ~BIT(19)) |
-				 ((uint32_t)((val >> 1) & 1U) << 19U);
-	} else {
-		return -EINVAL;
+	for (uint8_t i = 0U; i < slots; i++) {
+		ret = n32g45x_apply_remap(keys[i] >> 8U, keys[i] & 0xFFU,
+					  ws[i], vals[i]);
+		if (ret < 0) {
+			return ret;
+		}
 	}
 
 	return 0;
