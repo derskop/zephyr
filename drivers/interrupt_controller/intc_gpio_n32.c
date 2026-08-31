@@ -15,7 +15,15 @@
 #include <zephyr/sys/util.h>
 #include <zephyr/sys/util_macro.h>
 
+/*
+ * The EXTI controller is F1-compatible on N32G45x. Other series with a
+ * different EXTI layout provide their own implementation section.
+ */
+#ifdef CONFIG_SOC_SERIES_N32G45X
 #include <n32g45x.h>
+#endif /* CONFIG_SOC_SERIES_N32G45X */
+
+#ifdef CONFIG_SOC_SERIES_N32G45X
 
 #define EXTI_NODE DT_COMPAT_GET_ANY_STATUS_OKAY(nsing_n32_exti)
 
@@ -152,3 +160,5 @@ static int n32_exti_gpio_intc_init(void)
 }
 
 SYS_INIT(n32_exti_gpio_intc_init, PRE_KERNEL_1, CONFIG_INTC_INIT_PRIORITY);
+
+#endif /* CONFIG_SOC_SERIES_N32G45X */
