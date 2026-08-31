@@ -1,8 +1,9 @@
-# Copyright (c) 2023, Quincy.W <wangqyfm@foxmail.com>
+# Copyright (c) 2024 Nations Technologies Inc.
 # SPDX-License-Identifier: Apache-2.0
 
 config PINCTRL_N32
-	bool "PINCTRL Driver for N32 family of MCUs"
-    default y
-	depends on PINCTRL
-	depends on SOC_FAMILY_NSING_N32
+	bool "Nations N32 pin controller driver"
+	default y
+	depends on DT_HAS_NSING_N32G45_PINCTRL_ENABLED
+	help
+	  Enable pin controller driver for Nations N32G45x MCUs.
