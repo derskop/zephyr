@@ -1,23 +1,44 @@
-# Copyright (c) 2024 Nations Technologies
+# Copyright (c) 2024 Nations Technologies Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-description: Nations Technologies N32G45 pin controller
+description: Nations N32G45x pin controller
 
 compatible: "nsing,n32g45-pinctrl"
 
-include: [base.yaml]
+include: base.yaml
 
 properties:
   reg:
     required: true
+  "#address-cells":
+    required: true
+    const: 1
+  "#size-cells":
+    required: true
+    const: 1
 
 child-binding:
-  description: N32 pin configuration state
+  description: |
+    Pin configuration node. pinmux is encoded by the N32G45X_PINMUX()
+    macro from <zephyr/dt-bindings/pinctrl/n32g45x-pinctrl.h>.
+  include:
+    - name: pincfg-node.yaml
+      property-allowlist:
+        - bias-disable
+        - bias-pull-up
+        - bias-pull-down
+        - drive-open-drain
+        - drive-push-pull
+        - output-high
+        - output-low
   properties:
     pinmux:
       type: int
       required: true
-    remap:
-      type: int
-      required: false
-      description: Full GPIO_RMP_xxx remap value; omit when no remap
+    slew-rate:
+      type: string
+      default: "2mhz"
+      enum:
+        - "2mhz"
+        - "10mhz"
+        - "50mhz"
