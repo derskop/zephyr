@@ -17,9 +17,16 @@
 #include <n32_gpio_shared.h>
 #include <pinctrl_soc.h>
 
-#include <n32g45x.h>
-
 #define DT_DRV_COMPAT nsing_n32_gpio
+
+/*
+ * The N32 GPIO hardware differs across SoC series (N32G45x uses the
+ * F1-style PL_CFG/PH_CFG registers, other series use the F4-style
+ * MODER/AFR registers). Each series provides its own implementation
+ * section below.
+ */
+#ifdef CONFIG_SOC_SERIES_N32G45X
+#include <n32g45x.h>
 
 struct gpio_n32_config {
 	GPIO_Module *base;
@@ -267,3 +274,5 @@ static const struct gpio_driver_api gpio_n32_api = {
 			      &gpio_n32_api);
 
 DT_INST_FOREACH_STATUS_OKAY(GPIO_N32_INIT)
+
+#endif /* CONFIG_SOC_SERIES_N32G45X */
