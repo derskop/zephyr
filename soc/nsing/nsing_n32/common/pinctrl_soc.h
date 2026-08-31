@@ -1,90 +1,116 @@
 /*
- * Copyright (c) 2024
+ * Copyright (c) 2024 Nations Technologies Inc.
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
 #ifndef ZEPHYR_SOC_ARM_NATIONS_COMMON_PINCTRL_SOC_H_
 #define ZEPHYR_SOC_ARM_NATIONS_COMMON_PINCTRL_SOC_H_
 
-
 #include <zephyr/devicetree.h>
 #include <zephyr/types.h>
-#include <zephyr/dt-bindings/pinctrl/n32-pinctrl.h>
-
-
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+#ifdef CONFIG_SOC_SERIES_N32G45X
+#include <zephyr/dt-bindings/pinctrl/n32g45x-pinctrl.h>
 
+/** Type for N32G45x pin. */
+typedef uint32_t pinctrl_soc_pin_t;
 
-#define N32_NO_PULL     0x0
-#define N32_PULL_UP     0x1
-#define N32_PULL_DOWN   0x2
-#define N32_PUSH_PULL   0x0
-#define N32_OPEN_DRAIN  0x1
-#define N32_OUTPUT_LOW  0x0
-#define N32_OUTPUT_HIGH 0x1
-#define N32_GPIO_OUTPUT 0x1
-
-
-
-
-
-
-
-
-
-/** Type for N32 pin. */
-typedef struct pinctrl_soc_pin {
-	/** Pinmux settings (port, pin, function, bias, drive, slew rate). */
-	uint32_t pinmux;
-	/** Full GPIO_RMP_xxx remap value, or 0 if no remap. */
-	uint32_t remap;
-} pinctrl_soc_pin_t;
-
-
-
-
-
-/**
- * @brief Utility macro to initialize a single pin from its DT node.
- *
- * @param node_id Node identifier.
+/*
+ * N32G45x pin configuration bit fields:
+ *   [4:0]  PORT
+ *   [8:5]  PIN
+ *   [12:9] CNFMODE: PCFG[1:0] + PMODE[1:0], same layout as the 4-bit
+ *          per-pin field in PL_CFG/PH_CFG
+ *   [13]   POD: input pull direction (1 = pull-up) or output initial
+ *          level (1 = high)
+ *   [23:14] REMAP opcode (see N32G45X_REMAP in the pinctrl bindings)
  */
-#define Z_PINCTRL_N32_PIN_INIT(node_id)				       \
-	{ .pinmux = DT_PROP(node_id, pinmux),			       \
-	  .remap  = DT_PROP_OR(node_id, remap, 0) }
+#define N32_PORT_Pos     0
+#define N32_PORT_Msk     (0x1F << N32_PORT_Pos)
+#define N32_PIN_Pos      5
+#define N32_PIN_Msk      (0xF << N32_PIN_Pos)
+#define N32_CNFMODE_Pos  9
+#define N32_CNFMODE_Msk  (0xF << N32_CNFMODE_Pos)
+#define N32_PMODE_Pos    N32_CNFMODE_Pos
+#define N32_PMODE_Msk    (0x3 << N32_PMODE_Pos)
+#define N32_PCFG_Pos     (N32_CNFMODE_Pos + 2)
+#define N32_PCFG_Msk     (0x3 << N32_PCFG_Pos)
+#define N32_POD_Pos      13
+#define N32_POD_Msk      (0x1 << N32_POD_Pos)
+#define N32_REMAP_Pos    14
+#define N32_REMAP_Msk    (0x3FF << N32_REMAP_Pos)
 
+/* CNFMODE values (PCFG + PMODE packed) */
+#define N32_CNFMODE_ANALOG      0x0U
+#define N32_CNFMODE_INPUT_FLOAT 0x4U
+#define N32_CNFMODE_INPUT_PUPD  0x8U
 
+/* PMODE values */
+#define N32_PMODE_2MHZ  0x1U
+#define N32_PMODE_10MHZ 0x2U
+#define N32_PMODE_50MHZ 0x3U
 
+/* PCFG values */
+#define N32_PCFG_GP_PP  0x0U
+#define N32_PCFG_GP_OD  0x4U
+#define N32_PCFG_AF_PP  0x8U
+#define N32_PCFG_AF_OD  0xCU
 
+/* POD values */
+#define N32_POD_0 0x0U
+#define N32_POD_1 N32_POD_Msk
 
-/**
- * @brief Utility macro to initialize each pin.
- *
- * @param node_id Node identifier.
- * @param state_prop State property name.
- * @param idx State property entry index.
- */
-#define Z_PINCTRL_STATE_PIN_INIT(node_id, state_prop, idx) \
-	Z_PINCTRL_N32_PIN_INIT(DT_PROP_BY_IDX(node_id, state_prop, idx)),
-    
-    
- 
-/**
- * @brief Utility macro to initialize state pins contained in a given property.
- *
- * @param node_id Node identifier.
- * @param prop Property name describing state pins.
- */
+/* Carry pinmux PORT/LINE/REMAP fields into the pin configuration. */
+#define N32G45X_PMUX2PCFG_PORT_LINE_REMAP(pinmux)                          \
+	(((((pinmux) >> N32G45X_PORT_SHIFT) & N32G45X_PORT_MASK)            \
+		<< N32_PORT_Pos) |                                           \
+	 ((((pinmux) >> N32G45X_LINE_SHIFT) & N32G45X_LINE_MASK)            \
+		<< N32_PIN_Pos) |                                            \
+	 ((((pinmux) >> N32G45X_RM_SHIFT) & N32G45X_RM_MASK)                \
+		<< N32_REMAP_Pos))
 
-#define Z_PINCTRL_STATE_PINS_INIT(node_id, prop)			       \
+/* Input mode: bias-* properties select floating or pull-up/pull-down. */
+#define N32G45X_GET_INPUT_CNFMODE_POD(node_id)                             \
+	(DT_PROP_OR(node_id, bias_pull_up, 0) ?                             \
+		(N32_CNFMODE_INPUT_PUPD | N32_POD_1) :                       \
+	 (DT_PROP_OR(node_id, bias_pull_down, 0) ?                          \
+		N32_CNFMODE_INPUT_PUPD : N32_CNFMODE_INPUT_FLOAT))
+
+/* Output/alternate modes: slew-rate selects PMODE, drive-open-drain PCFG. */
+#define N32G45X_GET_OUTPUT_CNFMODE(node_id, is_alt)                        \
+	((is_alt ? N32_PCFG_AF_PP : N32_PCFG_GP_PP) |                       \
+	 (DT_PROP_OR(node_id, drive_open_drain, 0) ? N32_PCFG_GP_OD : 0U) | \
+	 (DT_ENUM_IDX(node_id, slew_rate) + N32_PMODE_2MHZ))
+
+/* Output initial level via POD. */
+#define N32G45X_GET_POD(node_id)                                           \
+	(DT_PROP_OR(node_id, output_high, false) ? N32_POD_1 :              \
+	 (DT_PROP_OR(node_id, output_low, false) ? N32_POD_0 : 0U))
+
+/* Assemble the full pin configuration from a DT pin node. */
+#define Z_N32G45X_CNFMODE_POD(node_id, mode)                               \
+	((mode) == ANALOG ? N32_CNFMODE_ANALOG :                            \
+	 (mode) == GPIO_IN ? N32G45X_GET_INPUT_CNFMODE_POD(node_id) :       \
+	 N32G45X_GET_OUTPUT_CNFMODE(node_id, ((mode) == ALTERNATE))) |      \
+	N32G45X_GET_POD(node_id)
+
+#define Z_PINCTRL_N32G45X_PIN_INIT(node_id)                                \
+	(N32G45X_PMUX2PCFG_PORT_LINE_REMAP(DT_PROP(node_id, pinmux)) |      \
+	 Z_N32G45X_CNFMODE_POD(node_id,                                    \
+		((DT_PROP(node_id, pinmux) >> N32G45X_MODE_SHIFT) &          \
+		 N32G45X_MODE_MASK)))
+
+#define Z_PINCTRL_STATE_PIN_INIT(node_id, prop, idx)                       \
+	Z_PINCTRL_N32G45X_PIN_INIT(DT_PROP_BY_IDX(node_id, prop, idx)),
+
+#define Z_PINCTRL_STATE_PINS_INIT(node_id, prop)                           \
 	{DT_FOREACH_PROP_ELEM(node_id, prop, Z_PINCTRL_STATE_PIN_INIT)}
-
-/** @endcond */
+#endif /* CONFIG_SOC_SERIES_N32G45X */
 
 #ifdef __cplusplus
 }
