@@ -59,9 +59,6 @@ static int gpio_n32_flags_to_conf(gpio_flags_t flags, pinctrl_soc_pin_t *pincfg)
 {
 	*pincfg = 0;
 
-	if ((flags & GPIO_INPUT) && (flags & GPIO_OUTPUT)) {
-		return -ENOTSUP;
-	}
 	if ((flags & GPIO_PULL_UP) && (flags & GPIO_PULL_DOWN)) {
 		return -ENOTSUP;
 	}
@@ -71,6 +68,11 @@ static int gpio_n32_flags_to_conf(gpio_flags_t flags, pinctrl_soc_pin_t *pincfg)
 		return 0;
 	}
 	if (flags & GPIO_OUTPUT) {
+		/* Output only, or output with input: the N32 input sampler
+		 * stays active in output mode (manual: "input data register
+		 * is readable in output mode"), so INPUT|OUTPUT needs no
+		 * special handling - same as the STM32F1 driver.
+		 */
 		*pincfg = N32_PCFG_GP_PP | N32_PMODE_50MHZ;
 		if (flags & GPIO_SINGLE_ENDED) {
 			if (!(flags & GPIO_LINE_OPEN_DRAIN)) {
@@ -81,7 +83,14 @@ static int gpio_n32_flags_to_conf(gpio_flags_t flags, pinctrl_soc_pin_t *pincfg)
 		}
 		if (flags & GPIO_OUTPUT_INIT_HIGH) {
 			*pincfg |= N32_POD_1;
+		} else if (flags & GPIO_OUTPUT_INIT_LOW) {
+			/* POD 0 is the reset of the field, nothing to set */
+			;
 		}
+		/* GPIO_PULL_UP/DOWN in output mode: POD is shared with the
+		 * output level, so the pull flags are ignored - same
+		 * behavior as STM32F1 (which has the same register layout).
+		 */
 	} else if (flags & GPIO_INPUT) {
 		if (flags & GPIO_PULL_UP) {
 			*pincfg = N32_CNFMODE_INPUT_PUPD | N32_POD_1;
@@ -142,7 +151,12 @@ static int gpio_n32_port_set_masked_raw(const struct device *dev,
 {
 	const struct gpio_n32_config *cfg = DEV_CFG(dev);
 
-	cfg->base->POD = (cfg->base->POD & ~mask) | (value & mask);
+	/* Single-bit set/clear via PBSC/PBC instead of a POD read-modify-
+	 * write, so bits touched concurrently (e.g. by the ISR) are not
+	 * lost. PBC clears the bits to reset, PBSC sets them to set.
+	 */
+	cfg->base->PBC = mask & ~value;
+	cfg->base->PBSC = mask & value;
 
 	return 0;
 }
@@ -194,6 +208,11 @@ static int gpio_n32_pin_interrupt_configure(const struct device *dev,
 	uint8_t irq_trig;
 	int ret;
 
+	/* The EXTI controller has 16 lines, one per pin */
+	if (pin >= 16U) {
+		return -EINVAL;
+	}
+
 	if (mode == GPIO_INT_MODE_DISABLED) {
 		n32_gpio_intc_disable_line(pin);
 		n32_gpio_intc_remove_irq_callback(pin);
@@ -229,7 +248,11 @@ static int gpio_n32_pin_interrupt_configure(const struct device *dev,
 		return ret;
 	}
 
-	n32_gpio_intc_select_line_trigger(pin, irq_trig);
+	ret = n32_gpio_intc_select_line_trigger(pin, irq_trig);
+	if (ret < 0) {
+		return ret;
+	}
+
 	n32_gpio_intc_enable_line(pin);
 
 	return 0;

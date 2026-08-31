@@ -5,6 +5,7 @@
  */
 
 #include <errno.h>
+#include <stdbool.h>
 
 #include <zephyr/devicetree.h>
 #include <zephyr/drivers/clock_control.h>
@@ -37,28 +38,52 @@ static struct n32_intc_gpio_data intc_gpio_data;
 /* EXTI line -> NVIC IRQ mapping, filled at init from the devicetree node */
 static uint8_t n32_exti_irq_table[16];
 
-static void n32_fill_irq_table(uint32_t start, uint32_t len, uint32_t irq)
+static int n32_fill_irq_table(uint32_t start, uint32_t len, uint32_t irq)
 {
+	/* Guard against a malformed line-ranges entry overflowing the table */
+	if ((start >= ARRAY_SIZE(n32_exti_irq_table)) ||
+	    (len > ARRAY_SIZE(n32_exti_irq_table) - start)) {
+		return -EINVAL;
+	}
+
 	for (uint32_t i = 0U; i < len; i++) {
 		n32_exti_irq_table[start + i] = irq;
 	}
+
+	return 0;
 }
 
-static void n32_afio_clock_enable(void)
+static int n32_afio_clock_enable(void)
 {
 	/* AFIO_EXTI_CFG line source selection requires the AFIO clock */
 	uint32_t clkid = N32_CLOCK_AFIO;
 
-	(void)clock_control_on(DEVICE_DT_GET(DT_NODELABEL(rcc)),
-			       (clock_control_subsys_t)&clkid);
+	return clock_control_on(DEVICE_DT_GET(DT_NODELABEL(rcc)),
+				(clock_control_subsys_t)&clkid);
+}
+
+/* EXTI line 0-15; EXTI_CFG[4] is a 4-entry array and the per-line
+ * registers are 32-bit, so anything beyond 15 is out of range.
+ */
+static bool n32_line_in_range(n32_gpio_irq_line_t line)
+{
+	return line < 16U;
 }
 
 int n32_gpio_intc_set_line_src_port(n32_gpio_irq_line_t line, uint8_t port)
 {
 	/* AFIO_EXTI_CFG1..4, 4 bits per line, port select 0-6 (PA..PG) */
 	const uint32_t shift = (line % 4U) * 4U;
+	int ret;
 
-	n32_afio_clock_enable();
+	if (!n32_line_in_range(line)) {
+		return -EINVAL;
+	}
+
+	ret = n32_afio_clock_enable();
+	if (ret < 0) {
+		return ret;
+	}
 
 	AFIO->EXTI_CFG[line / 4U] &= ~(0xFU << shift);
 	AFIO->EXTI_CFG[line / 4U] |= (uint32_t)(port & 0x7U) << shift;
@@ -68,7 +93,18 @@ int n32_gpio_intc_set_line_src_port(n32_gpio_irq_line_t line, uint8_t port)
 
 void n32_gpio_intc_enable_line(n32_gpio_irq_line_t line)
 {
+	if (!n32_line_in_range(line)) {
+		return;
+	}
+
 	EXTI->IMASK |= BIT(line);
+
+	/* Clear any pending flag latched before (or while the line was
+	 * disabled); otherwise a stale edge fires a spurious interrupt
+	 * right after enabling. The SDK clears the pending bits the same
+	 * way (write 1 to clear) in EXTI_DeInit.
+	 */
+	EXTI->PEND = BIT(line);
 
 	/* IRQ_CONNECT only registers the vector; the NVIC IRQ must be
 	 * enabled explicitly.
@@ -78,11 +114,19 @@ void n32_gpio_intc_enable_line(n32_gpio_irq_line_t line)
 
 void n32_gpio_intc_disable_line(n32_gpio_irq_line_t line)
 {
+	if (!n32_line_in_range(line)) {
+		return;
+	}
+
 	EXTI->IMASK &= ~BIT(line);
 }
 
-void n32_gpio_intc_select_line_trigger(n32_gpio_irq_line_t line, uint8_t trig)
+int n32_gpio_intc_select_line_trigger(n32_gpio_irq_line_t line, uint8_t trig)
 {
+	if (!n32_line_in_range(line)) {
+		return -EINVAL;
+	}
+
 	switch (trig) {
 	case N32_GPIO_IRQ_TRIG_RISING:
 		EXTI->RT_CFG |= BIT(line);
@@ -97,14 +141,26 @@ void n32_gpio_intc_select_line_trigger(n32_gpio_irq_line_t line, uint8_t trig)
 		EXTI->FT_CFG |= BIT(line);
 		break;
 	default:
-		break;
+		return -EINVAL;
 	}
+
+	return 0;
 }
 
 int n32_gpio_intc_set_irq_callback(n32_gpio_irq_line_t line,
 				   n32_gpio_irq_cb_t cb, void *user)
 {
-	if (intc_gpio_data.cb[line] != NULL) {
+	if (!n32_line_in_range(line)) {
+		return -EINVAL;
+	}
+
+	/* Re-registering the same callback is allowed (the GPIO driver
+	 * reconfigures a line on every pin_interrupt_configure call);
+	 * a different callback on an occupied line is a conflict.
+	 */
+	if ((intc_gpio_data.cb[line] != NULL) &&
+	    ((intc_gpio_data.cb[line] != cb) ||
+	     (intc_gpio_data.cb_data[line] != user))) {
 		return -EBUSY;
 	}
 
@@ -116,6 +172,10 @@ int n32_gpio_intc_set_irq_callback(n32_gpio_irq_line_t line,
 
 void n32_gpio_intc_remove_irq_callback(n32_gpio_irq_line_t line)
 {
+	if (!n32_line_in_range(line)) {
+		return;
+	}
+
 	intc_gpio_data.cb[line] = NULL;
 	intc_gpio_data.cb_data[line] = NULL;
 }
@@ -146,8 +206,13 @@ static void n32_intc_gpio_isr(const void *exti_range)
 		DT_PROP_BY_IDX(node_id, line_ranges, UTIL_X2(idx)),		\
 		DT_PROP_BY_IDX(node_id, line_ranges, UTIL_INC(UTIL_X2(idx)))	\
 	};									\
-	n32_fill_irq_table(line_range_##idx[0], line_range_##idx[1],		\
-			   DT_IRQ_BY_IDX(node_id, idx, irq));			\
+	do {									\
+		if (n32_fill_irq_table(line_range_##idx[0],			\
+				       line_range_##idx[1],			\
+				       DT_IRQ_BY_IDX(node_id, idx, irq)) < 0) {	\
+			return -EINVAL;						\
+		}								\
+	} while (0);								\
 	IRQ_CONNECT(DT_IRQ_BY_IDX(node_id, idx, irq),				\
 		    DT_IRQ_BY_IDX(node_id, idx, priority),			\
 		    n32_intc_gpio_isr, line_range_##idx, 0);
