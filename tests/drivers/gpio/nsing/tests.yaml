@@ -7,4 +7,5 @@ tests:
       - drivers
       - gpio
     platform_allow: n32g45xml_stb
-    vendor_allow: nsing
+    vendor_allow:
+      - nsing

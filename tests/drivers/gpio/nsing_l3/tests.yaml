@@ -2,10 +2,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 tests:
-  drivers.pinctrl.nsing:
+  drivers.gpio.nsing_l3:
     tags:
       - drivers
-      - pinctrl
+      - gpio
     platform_allow: n32g45xml_stb
     vendor_allow:
       - nsing

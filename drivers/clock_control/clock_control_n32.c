@@ -71,7 +71,7 @@ static int n32_cc_get_rate(const struct device *dev,
 	return 0;
 }
 
-static const struct clock_control_driver_api n32_cc_api = {
+static DEVICE_API(clock_control, n32_cc_api) = {
 	.on = n32_cc_on,
 	.off = n32_cc_off,
 	.get_rate = n32_cc_get_rate,

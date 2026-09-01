@@ -138,10 +138,10 @@ ZTEST(pinctrl_nsing, test_remap_conflict)
 	static const pinctrl_soc_pin_t conflict[2] = {
 		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 			N32G45X_PINMUX('B', 8, ALTERNATE, USART3_REMAP1)) |
-			(N32_PCFG_AF_PP | N32_PMODE_2MHZ),
+			((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos),
 		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 			N32G45X_PINMUX('B', 9, ALTERNATE, USART3_REMAP2)) |
-			(N32_PCFG_AF_PP | N32_PMODE_2MHZ),
+			((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos),
 	};
 
 	zassert_equal(pinctrl_configure_pins(conflict, ARRAY_SIZE(conflict),
@@ -158,10 +158,10 @@ ZTEST(pinctrl_nsing, test_remap_multi_field)
 	static const pinctrl_soc_pin_t multi[2] = {
 		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 			N32G45X_PINMUX('B', 8, ALTERNATE, I2C1_REMAP1)) |
-			(N32_PCFG_AF_OD | N32_PMODE_2MHZ),
+			((N32_PCFG_AF_OD | N32_PMODE_2MHZ) << N32_CNFMODE_Pos),
 		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 			N32G45X_PINMUX('B', 9, ALTERNATE, USART1_REMAP1)) |
-			(N32_PCFG_AF_PP | N32_PMODE_2MHZ),
+			((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos),
 	};
 
 	zassert_ok(pinctrl_configure_pins(multi, ARRAY_SIZE(multi),
@@ -179,25 +179,25 @@ ZTEST(pinctrl_nsing, test_remap_paths)
 	static pinctrl_soc_pin_t uart4[1] = {
 		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 			N32G45X_PINMUX('B', 10, ALTERNATE, UART4_REMAP1)) |
-			(N32_PCFG_AF_PP | N32_PMODE_2MHZ),
+			((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos),
 	};
 	/* RMP_CFG4 path: COMP1_REMAP1 -> RMP_CFG4 bits 1:0 = 01 */
 	static pinctrl_soc_pin_t comp1[1] = {
 		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 			N32G45X_PINMUX('B', 11, ALTERNATE, COMP1_REMAP1)) |
-			(N32_PCFG_AF_PP | N32_PMODE_2MHZ),
+			((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos),
 	};
 	/* Split path: SPI1_REMAP2 -> RMP_CFG bit0 = 0, RMP_CFG3 bit18 = 1 */
 	static pinctrl_soc_pin_t spi1[1] = {
 		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 			N32G45X_PINMUX('B', 12, ALTERNATE, SPI1_REMAP2)) |
-			(N32_PCFG_AF_PP | N32_PMODE_2MHZ),
+			((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos),
 	};
 	/* Split path: USART2_REMAP1 -> RMP_CFG bit3 = 1, RMP_CFG3 bit19 = 0 */
 	static pinctrl_soc_pin_t usart2[1] = {
 		N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 			N32G45X_PINMUX('B', 13, ALTERNATE, USART2_REMAP1)) |
-			(N32_PCFG_AF_PP | N32_PMODE_2MHZ),
+			((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos),
 	};
 
 	zassert_ok(pinctrl_configure_pins(uart4, ARRAY_SIZE(uart4),
@@ -221,27 +221,27 @@ ZTEST(pinctrl_nsing, test_remap_paths)
 	/* Applying a REMAP0 opcode resets the field (clear-then-set) */
 	uart4[0] = N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 		N32G45X_PINMUX('B', 10, ALTERNATE, UART4_REMAP0)) |
-		(N32_PCFG_AF_PP | N32_PMODE_2MHZ);
+		((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos);
 	zassert_ok(pinctrl_configure_pins(uart4, 1, PINCTRL_REG_NONE));
 	zassert_equal((AFIO->RMP_CFG3 >> 20) & 0x3, 0x0);
 
 	spi1[0] = N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 		N32G45X_PINMUX('B', 12, ALTERNATE, SPI1_REMAP0)) |
-		(N32_PCFG_AF_PP | N32_PMODE_2MHZ);
+		((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos);
 	zassert_ok(pinctrl_configure_pins(spi1, 1, PINCTRL_REG_NONE));
 	zassert_equal(AFIO->RMP_CFG & BIT(0), 0);
 	zassert_equal(AFIO->RMP_CFG3 & BIT(18), 0);
 
 	usart2[0] = N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 		N32G45X_PINMUX('B', 13, ALTERNATE, USART2_REMAP0)) |
-		(N32_PCFG_AF_PP | N32_PMODE_2MHZ);
+		((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos);
 	zassert_ok(pinctrl_configure_pins(usart2, 1, PINCTRL_REG_NONE));
 	zassert_equal(AFIO->RMP_CFG & BIT(3), 0);
 	zassert_equal(AFIO->RMP_CFG3 & BIT(19), 0);
 
 	comp1[0] = N32G45X_PMUX2PCFG_PORT_LINE_REMAP(
 		N32G45X_PINMUX('B', 11, ALTERNATE, COMP1_REMAP0)) |
-		(N32_PCFG_AF_PP | N32_PMODE_2MHZ);
+		((N32_PCFG_AF_PP | N32_PMODE_2MHZ) << N32_CNFMODE_Pos);
 	zassert_ok(pinctrl_configure_pins(comp1, 1, PINCTRL_REG_NONE));
 	zassert_equal(AFIO->RMP_CFG4 & 0x3, 0x0);
 }
