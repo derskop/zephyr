@@ -56,17 +56,25 @@ static int n32g45x_apply_remap(uint8_t reg, uint8_t bit, uint8_t w, uint8_t val)
 {
 	const uint32_t msk = ((uint32_t)w + 1U) << bit;
 
-	if (reg == N32G45X_RMP_CFG) {
-		/* SW_JTAG_CFG (bits 26:24) is documented as "read value
-		 * undefined" in the manual. The SDK guards it with
-		 * DBGAFR_SWJCFG_MASK (0xF0FFFFFF) in GPIO_ConfigPinRemap;
-		 * mask it out the same way so the RMW never writes the
-		 * undefined read-back value back into the SWJ field.
-		 */
-		const uint32_t swj_mask = 0xF0FFFFFFU;
+	/*
+	 * RMP_CFG write guard. SW_JTAG_CFG (bits 26:24) is documented as
+	 * "read value undefined" in the manual, so a read-modify-write
+	 * must never write the undefined read-back back into the SWJ
+	 * field: a value such as 100 would disable the SWD/JTAG debug
+	 * port. The SDK guards it the same way in GPIO_ConfigPinRemap
+	 * (&= DBGAFR_SWJCFG_MASK, then |= ~DBGAFR_SWJCFG_MASK): every
+	 * write forces the field to a fixed value. SWJ = 111 is a
+	 * no-effect combination per the manual's SW_JTAG_CFG table.
+	 * The SDK forces bits 27:24 to 1111; bit 27 is Reserved and
+	 * must stay 0 per the manual, so here only the 3 SWJ bits are
+	 * forced to 111.
+	 */
+	const uint32_t swj_clr_mask = 0x00FFFFFFU; /* clear SWJ + Reserved on read */
+	const uint32_t swj_nop_val = 0x07000000U; /* SWJ (bits 26:24) = 111: no effect */
 
-		AFIO->RMP_CFG = (AFIO->RMP_CFG & ~msk & swj_mask) |
-				((uint32_t)val << bit);
+	if (reg == N32G45X_RMP_CFG) {
+		AFIO->RMP_CFG = (AFIO->RMP_CFG & ~msk & swj_clr_mask) |
+				((uint32_t)val << bit) | swj_nop_val;
 	} else if (reg == N32G45X_RMP_CFG3) {
 		AFIO->RMP_CFG3 = (AFIO->RMP_CFG3 & ~msk) | ((uint32_t)val << bit);
 	} else if (reg == N32G45X_RMP_CFG4) {
@@ -74,14 +82,14 @@ static int n32g45x_apply_remap(uint8_t reg, uint8_t bit, uint8_t w, uint8_t val)
 	} else if (reg == N32G45X_RMP_SPLIT) {
 		if (bit == 0U) {
 			/* SPI1: bits split between RMP_CFG bit 0 and RMP_CFG3 bit 18 */
-			AFIO->RMP_CFG = (AFIO->RMP_CFG & ~BIT(0) & 0xF0FFFFFFU) |
-					((uint32_t)(val & 1U) << 0U);
+			AFIO->RMP_CFG = (AFIO->RMP_CFG & ~BIT(0) & swj_clr_mask) |
+					((uint32_t)(val & 1U) << 0U) | swj_nop_val;
 			AFIO->RMP_CFG3 = (AFIO->RMP_CFG3 & ~BIT(18)) |
 					 ((uint32_t)((val >> 1) & 1U) << 18U);
 		} else if (bit == 3U) {
 			/* USART2: bits split between RMP_CFG bit 3 and RMP_CFG3 bit 19 */
-			AFIO->RMP_CFG = (AFIO->RMP_CFG & ~BIT(3) & 0xF0FFFFFFU) |
-					((uint32_t)(val & 1U) << 3U);
+			AFIO->RMP_CFG = (AFIO->RMP_CFG & ~BIT(3) & swj_clr_mask) |
+					((uint32_t)(val & 1U) << 3U) | swj_nop_val;
 			AFIO->RMP_CFG3 = (AFIO->RMP_CFG3 & ~BIT(19)) |
 					 ((uint32_t)((val >> 1) & 1U) << 19U);
 		} else {

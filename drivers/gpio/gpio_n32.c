@@ -64,7 +64,7 @@ static int gpio_n32_flags_to_conf(gpio_flags_t flags, pinctrl_soc_pin_t *pincfg)
 	}
 	if (flags == GPIO_DISCONNECTED) {
 		/* High impedance */
-		*pincfg = N32_CNFMODE_ANALOG;
+		*pincfg = N32_CNFMODE_ANALOG << N32_CNFMODE_Pos;
 		return 0;
 	}
 	if (flags & GPIO_OUTPUT) {
@@ -73,13 +73,13 @@ static int gpio_n32_flags_to_conf(gpio_flags_t flags, pinctrl_soc_pin_t *pincfg)
 		 * is readable in output mode"), so INPUT|OUTPUT needs no
 		 * special handling - same as the STM32F1 driver.
 		 */
-		*pincfg = N32_PCFG_GP_PP | N32_PMODE_50MHZ;
+		*pincfg = (N32_PCFG_GP_PP | N32_PMODE_50MHZ) << N32_CNFMODE_Pos;
 		if (flags & GPIO_SINGLE_ENDED) {
 			if (!(flags & GPIO_LINE_OPEN_DRAIN)) {
 				/* Open-source not supported by the hardware */
 				return -ENOTSUP;
 			}
-			*pincfg = N32_PCFG_GP_OD | N32_PMODE_50MHZ;
+			*pincfg = (N32_PCFG_GP_OD | N32_PMODE_50MHZ) << N32_CNFMODE_Pos;
 		}
 		if (flags & GPIO_OUTPUT_INIT_HIGH) {
 			*pincfg |= N32_POD_1;
@@ -93,11 +93,11 @@ static int gpio_n32_flags_to_conf(gpio_flags_t flags, pinctrl_soc_pin_t *pincfg)
 		 */
 	} else if (flags & GPIO_INPUT) {
 		if (flags & GPIO_PULL_UP) {
-			*pincfg = N32_CNFMODE_INPUT_PUPD | N32_POD_1;
+			*pincfg = (N32_CNFMODE_INPUT_PUPD << N32_CNFMODE_Pos) | N32_POD_1;
 		} else if (flags & GPIO_PULL_DOWN) {
-			*pincfg = N32_CNFMODE_INPUT_PUPD;
+			*pincfg = N32_CNFMODE_INPUT_PUPD << N32_CNFMODE_Pos;
 		} else {
-			*pincfg = N32_CNFMODE_INPUT_FLOAT;
+			*pincfg = N32_CNFMODE_INPUT_FLOAT << N32_CNFMODE_Pos;
 		}
 	} else {
 		/* Direction required */
