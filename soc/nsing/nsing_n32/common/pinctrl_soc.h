@@ -53,19 +53,17 @@ typedef uint32_t pinctrl_soc_pin_t;
 /*
  * PMODE values.
  *
- * NOTE - conflicting references:
- *   - AFIO reference manual (CN_UM_N32G45x_AFIO_V0, "IO mode and
- *     configuration table"): PMODE 01 = max 10MHz, 10 = max 2MHz,
- *     11 = max 50MHz (same encoding as STM32F1).
- *   - Nations SDK (n32g45x_gpio.h GPIO_SpeedType): GPIO_Speed_2MHz = 1,
- *     GPIO_Speed_10MHz = 2, GPIO_Speed_50MHz = 3 - the 2MHz/10MHz values
- *     are swapped relative to the manual.
- *   The values below follow the official SDK so the Zephyr layer stays
- *   consistent with the rest of the SDK ecosystem. Verify the actual
- *   slew rate on silicon (e.g. by measuring the output toggle frequency)
- *   before changing these; if the manual turns out to be correct, swap
- *   N32_PMODE_2MHZ and N32_PMODE_10MHZ and the slew-rate lookup below
- *   follows automatically.
+ * NOTE - the AFIO reference manual is self-inconsistent:
+ *   - The "IO模式和配置关系" summary table (CN_UM_N32G45x_AFIO_V0)
+ *     says PMODE 01 = max 10MHz, 10 = max 2MHz - a typo carried over
+ *     from the STM32F1 manual.
+ *   - The PL_CFG/PH_CFG register bit description in the same manual
+ *     says 01 = max 2MHz, 10 = max 10MHz, 11 = max 50MHz, which
+ *     matches the Nations SDK (GPIO_Speed_2MHz = 1, GPIO_Speed_10MHz
+ *     = 2, GPIO_Speed_50MHz = 3).
+ *   The values below follow the register description / SDK. Do NOT
+ *   swap N32_PMODE_2MHZ and N32_PMODE_10MHZ to match the summary
+ *   table - that would write the wrong PMODE encoding to hardware.
  */
 #define N32_PMODE_2MHZ  0x1U
 #define N32_PMODE_10MHZ 0x2U
@@ -91,11 +89,14 @@ typedef uint32_t pinctrl_soc_pin_t;
 		<< N32_REMAP_Pos))
 
 /* Input mode: bias-* properties select floating or pull-up/pull-down. */
-#define N32G45X_GET_INPUT_CNFMODE_POD(node_id)                             \
-	(DT_PROP_OR(node_id, bias_pull_up, 0) ?                             \
-		(N32_CNFMODE_INPUT_PUPD | N32_POD_1) :                       \
-	 (DT_PROP_OR(node_id, bias_pull_down, 0) ?                          \
-		N32_CNFMODE_INPUT_PUPD : N32_CNFMODE_INPUT_FLOAT))
+#define N32G45X_GET_INPUT_CNFMODE(node_id)                                 \
+	(DT_PROP_OR(node_id, bias_pull_up, 0) ? N32_CNFMODE_INPUT_PUPD :    \
+	 (DT_PROP_OR(node_id, bias_pull_down, 0) ? N32_CNFMODE_INPUT_PUPD : \
+	  N32_CNFMODE_INPUT_FLOAT))
+
+/* Input pull direction via POD. */
+#define N32G45X_GET_INPUT_POD(node_id)                                     \
+	(DT_PROP_OR(node_id, bias_pull_up, 0) ? N32_POD_1 : 0U)
 
 /* Output/alternate modes: slew-rate selects PMODE, drive-open-drain PCFG.
  * Slew-rate enum order comes from nsing,n32g45-pinctrl.yaml:
@@ -115,12 +116,17 @@ typedef uint32_t pinctrl_soc_pin_t;
 	(DT_PROP_OR(node_id, output_high, false) ? N32_POD_1 :              \
 	 (DT_PROP_OR(node_id, output_low, false) ? N32_POD_0 : 0U))
 
-/* Assemble the full pin configuration from a DT pin node. */
+/* Assemble the full pin configuration from a DT pin node. The CNFMODE
+ * constants are 4-bit field values and are shifted to their position in
+ * pinctrl_soc_pin_t; the POD bit is already positioned.
+ */
 #define Z_N32G45X_CNFMODE_POD(node_id, mode)                               \
-	((mode) == ANALOG ? N32_CNFMODE_ANALOG :                            \
-	 (mode) == GPIO_IN ? N32G45X_GET_INPUT_CNFMODE_POD(node_id) :       \
-	 N32G45X_GET_OUTPUT_CNFMODE(node_id, ((mode) == ALTERNATE))) |      \
-	N32G45X_GET_POD(node_id)
+	((((mode) == ANALOG ? N32_CNFMODE_ANALOG :                          \
+	   (mode) == GPIO_IN ? N32G45X_GET_INPUT_CNFMODE(node_id) :         \
+	   N32G45X_GET_OUTPUT_CNFMODE(node_id, ((mode) == ALTERNATE)))      \
+	  << N32_CNFMODE_Pos) |                                             \
+	 N32G45X_GET_POD(node_id) |                                         \
+	 ((mode) == GPIO_IN ? N32G45X_GET_INPUT_POD(node_id) : 0U))
 
 #define Z_PINCTRL_N32G45X_PIN_INIT(node_id)                                \
 	(N32G45X_PMUX2PCFG_PORT_LINE_REMAP(DT_PROP(node_id, pinmux)) |      \
