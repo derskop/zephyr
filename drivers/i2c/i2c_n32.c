@@ -428,7 +428,7 @@ static int i2c_n32_init(const struct device *dev)
     return 0;
 }
 
-static const struct i2c_driver_api i2c_n32_api = {
+static DEVICE_API(i2c, i2c_n32_api) = {
     .configure = i2c_n32_configure,
     .transfer = i2c_n32_transfer,
 };

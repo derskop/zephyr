@@ -54,7 +54,7 @@ static int n32_afio_clock_enable(void)
  */
 static int n32g45x_apply_remap(uint8_t reg, uint8_t bit, uint8_t w, uint8_t val)
 {
-	const uint32_t msk = ((uint32_t)w + 1U) << bit;
+	const uint32_t msk = (BIT((uint32_t)w + 1U) - 1U) << bit;
 
 	/*
 	 * RMP_CFG write guard. SW_JTAG_CFG (bits 26:24) is documented as

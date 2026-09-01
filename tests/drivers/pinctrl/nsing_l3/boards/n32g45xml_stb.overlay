@@ -1,0 +1,35 @@
+/*
+ * Copyright (c) 2024 Nations Technologies Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+#include <zephyr/dt-bindings/pinctrl/n32g45x-pinctrl.h>
+
+/*
+ * L3 functional pinctrl test device: PA0 switches between a floating
+ * input ("default") and a push-pull output high ("drive") state through
+ * the full pinctrl framework (pinctrl_apply_state -> driver). The
+ * resulting level is observed on PA2 through the PA0 -> PA2 jumper
+ * wire. PA0/PA2 do not conflict with board resources (USART1 PA9/PA10,
+ * I2C1 PB6/PB7, LEDs PA8/PB4/PB5, SWD PA13-15).
+ */
+/ {
+	test_pinctrl: test_pinctrl {
+		compatible = "vnd,pinctrl-device";
+		pinctrl-0 = <&pa0_float>;
+		pinctrl-1 = <&pa0_out_high>;
+		pinctrl-names = "default", "drive";
+	};
+};
+
+&pinctrl {
+	pa0_float: pa0_float {
+		pinmux = <N32G45X_PINMUX('A', 0, GPIO_IN, NO_REMAP)>;
+	};
+
+	pa0_out_high: pa0_out_high {
+		pinmux = <N32G45X_PINMUX('A', 0, GPIO_OUT, NO_REMAP)>;
+		output-high;
+	};
+};

@@ -79,10 +79,16 @@ ZTEST(gpio_nsing, test_flags_config)
 				      GPIO_INPUT | GPIO_OUTPUT));
 	zassert_equal(GPIOA->PL_CFG & 0xF, 0x3);
 
-	/* Invalid flag combinations */
+	/* Invalid flag combinations. PU|PD, input+single-ended and
+	 * no-direction are rejected by the gpio.h wrappers themselves
+	 * (assert with CONFIG_ASSERT always on in ztest builds, and
+	 * flags=0 means GPIO_DISCONNECTED in Zephyr 4.4), so those
+	 * cannot be probed through the API. The one invalid combination
+	 * that reaches the driver: open-source output is not supported
+	 * by the N32 hardware.
+	 */
 	zassert_equal(gpio_pin_configure(GPIO_DEV, TEST_OUT_PIN,
-					 GPIO_INPUT | GPIO_PULL_UP |
-					 GPIO_PULL_DOWN), -ENOTSUP);
+					 GPIO_OUTPUT | GPIO_SINGLE_ENDED), -ENOTSUP);
 }
 
 ZTEST(gpio_nsing, test_port_io)

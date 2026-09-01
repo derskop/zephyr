@@ -29,10 +29,13 @@
 #include <n32g45x.h>
 
 struct gpio_n32_config {
+	/* Must be first: the gpio.h wrappers cast dev->config to
+	 * struct gpio_driver_config and read port_pin_mask at offset 0.
+	 */
+	struct gpio_driver_config common;
 	GPIO_Module *base;
 	uint32_t clkid;
 	uint8_t port;
-	struct gpio_driver_config common;
 };
 
 struct gpio_n32_data {
@@ -267,7 +270,7 @@ static int gpio_n32_manage_callback(const struct device *dev,
 	return gpio_manage_callback(&data->callbacks, callback, set);
 }
 
-static const struct gpio_driver_api gpio_n32_api = {
+static DEVICE_API(gpio, gpio_n32_api) = {
 	.pin_configure = gpio_n32_pin_configure,
 	.port_get_raw = gpio_n32_port_get_raw,
 	.port_set_masked_raw = gpio_n32_port_set_masked_raw,
