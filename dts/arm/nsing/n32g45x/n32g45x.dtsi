@@ -603,7 +603,6 @@
 			interrupts = <20 0>, <19 0>, <22 0>;
 			interrupt-names = "rx", "tx", "sce";
 			sample-point = <875>;
-			#io-channel-cells = <1>;
 			status = "disabled";
 		};
 
@@ -612,8 +611,8 @@
 			reg = <0x40006800 0x400>;
 			clocks = <&rcc N32_CLOCK_CAN2>;
 			interrupts = <64 0>, <63 0>, <66 0>;
+			interrupt-names = "rx", "tx", "sce";
 			bitrate = <500000>;
-			#io-channel-cells = <1>;
 			status = "disabled";
 		};
 
