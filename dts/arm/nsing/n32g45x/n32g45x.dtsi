@@ -543,14 +543,12 @@
 		};
 */
 
-/*
-		crc: crc@40023000 {
-			compatible = "nsing,n32-crc";	
-			reg = <0x40023000 0x400>;
-			clocks = <&rcc N32_CLOCK_CRC>;
-			status = "disabled";
-		};
-*/
+	crc: crc@40023000 {
+		compatible = "nsing,n32-crc";
+		reg = <0x40023000 0x400>;
+		clocks = <&rcc N32_CLOCK_CRC>;
+		status = "disabled";
+	};
 
 		/* EXTI 与 AFIO 共用时钟，直接挂在 APB2 上 */
 		exti: interrupt-controller@40010400 {

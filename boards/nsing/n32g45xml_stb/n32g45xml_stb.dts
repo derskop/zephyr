@@ -13,6 +13,7 @@
 		zephyr,sram = &sram0;
 		zephyr,flash = &flash0;
 		zephyr,console = &usart1;
+		zephyr,crc = &crc;
 	};
 
 	leds {
@@ -43,12 +44,16 @@
 	status = "okay";
 };
 
+&gpioc {
+	status = "okay";
+};
+
 &rcc {
 	
 	clock-frequency = <DT_FREQ_M(144)>;
 	ahb-prescaler = <1>;
-	apb1-prescaler = <2>;
-	apb2-prescaler = <1>;
+	apb1-prescaler = <4>;
+	apb2-prescaler = <2>;
 	
 };
 
@@ -78,5 +83,36 @@
 	pinctrl-0 = <&can2_rx_pb12 &can2_tx_pb13>;
 	pinctrl-names = "default";
 	bitrate = <500000>;
+	status = "okay";
+};
+
+&crc {
+	status = "okay";
+};
+
+&spi1 {
+	pinctrl-0 = <&spi1_sck_pa5 &spi1_miso_pa6 &spi1_mosi_pa7>;
+	pinctrl-names = "default";
+	status = "okay";
+	cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
+
+	w25q128: w25q128@0 {
+		compatible = "jedec,spi-nor";
+		reg = <0>;
+		spi-max-frequency = <9000000>;
+		size = <134217728>;
+		jedec-id = [ef 40 18];
+	};
+};
+
+&spi2 {
+	pinctrl-0 = <&spi2_sck_pb13 &spi2_miso_pb14 &spi2_mosi_pb15>;
+	pinctrl-names = "default";
+	status = "okay";
+};
+
+&spi3 {
+	pinctrl-0 = <&spi3_sck_pc10 &spi3_miso_pc11 &spi3_mosi_pc12>;
+	pinctrl-names = "default";
 	status = "okay";
 };
