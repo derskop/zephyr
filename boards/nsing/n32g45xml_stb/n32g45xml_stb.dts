@@ -66,3 +66,17 @@
     clock-frequency = <I2C_BITRATE_STANDARD>;
     status = "okay";
 };
+
+&can1 {
+	pinctrl-0 = <&can1_rx_pa11 &can1_tx_pa12>;
+	pinctrl-names = "default";
+	bitrate = <500000>;
+	status = "okay";
+};
+
+&can2 {
+	pinctrl-0 = <&can2_rx_pb12 &can2_tx_pb13>;
+	pinctrl-names = "default";
+	bitrate = <500000>;
+	status = "okay";
+};

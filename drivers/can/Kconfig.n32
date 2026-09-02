@@ -1,0 +1,49 @@
+# N32 CAN configuration options
+#
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+config CAN_N32_BXCAN
+	bool "N32 bxCAN driver"
+	default y
+	depends on DT_HAS_NSING_N32_BXCAN_ENABLED
+	select PINCTRL
+	select USE_NSING_CAN
+	help
+	  Enable the Nations Technologies N32 bxCAN Driver.
+
+if CAN_N32_BXCAN
+
+config CAN_N32_BXCAN_MAX_STD_ID_FILTERS
+	int "Maximum number of standard (11-bit) ID filters"
+	default 14
+	range 0 14
+	help
+	  Defines the maximum number of filters with standard ID (11-bit)
+	  that can be added by the application.
+
+	  One standard ID filter with mask occupies 1/2 of a filter bank.
+	  Each N32 CAN instance provides 14 independent filter banks.
+
+	  The following equation determines the maximum total number of
+	  filters:
+
+	  CAN_N32_BXCAN_MAX_STD_ID_FILTERS + CAN_N32_BXCAN_MAX_EXT_ID_FILTERS * 2 <= 28
+
+config CAN_N32_BXCAN_MAX_EXT_ID_FILTERS
+	int "Maximum number of extended (29-bit) ID filters"
+	default 7
+	range 0 14
+	help
+	  Defines the maximum number of filters with extended ID (29-bit)
+	  that can be added by the application.
+
+	  One extended ID filter with mask occupies 1 of the 14 available
+	  filter banks.
+
+	  The following equation determines the maximum total number of
+	  filters:
+
+	  CAN_N32_BXCAN_MAX_STD_ID_FILTERS + CAN_N32_BXCAN_MAX_EXT_ID_FILTERS * 2 <= 28
+
+endif # CAN_N32_BXCAN

@@ -39,4 +39,24 @@
 		pinmux = <N32G45X_PINMUX('B', 9, ALTERNATE, I2C1_REMAP1)>;
 		drive-open-drain;
 	};
+
+	/* CAN1, default mapping (RX=PA11, TX=PA12) */
+	can1_rx_pa11: can1_rx_pa11 {
+		pinmux = <N32G45X_PINMUX('A', 11, GPIO_IN, NO_REMAP)>;
+	};
+
+	can1_tx_pa12: can1_tx_pa12 {
+		pinmux = <N32G45X_PINMUX('A', 12, ALTERNATE, CAN1_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	/* CAN2, default mapping (RX=PB12, TX=PB13) */
+	can2_rx_pb12: can2_rx_pb12 {
+		pinmux = <N32G45X_PINMUX('B', 12, GPIO_IN, NO_REMAP)>;
+	};
+
+	can2_tx_pb13: can2_tx_pb13 {
+		pinmux = <N32G45X_PINMUX('B', 13, ALTERNATE, CAN2_REMAP0)>;
+		slew-rate = "50mhz";
+	};
 };

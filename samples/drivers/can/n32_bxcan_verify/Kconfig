@@ -1,0 +1,19 @@
+# Private config options for the N32 bxCAN driver verification app
+
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+mainmenu "N32 bxCAN driver verification application"
+
+config CAN_SAMPLE_CROSS_BUS
+	bool "Run the CAN1 <-> CAN2 cross-bus test"
+	help
+	  Run the two-channel cross-bus test between CAN1 and CAN2 over a shared
+	  physical bus. Requires both channels connected to the same CAN bus
+	  (two transceivers, CAN1_H/CAN1_L wired together with CAN2_H/CAN2_L,
+	  terminated at 120 ohm).
+
+	  When disabled (default), each channel runs an internal loopback test
+	  which requires no external hardware.
+
+source "Kconfig.zephyr"
