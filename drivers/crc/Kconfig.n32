@@ -1,0 +1,15 @@
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig CRC_N32
+	bool "N32 CRC driver"
+	default y
+	depends on DT_HAS_NSING_N32_CRC_ENABLED
+	select USE_NSING_CRC
+	select CRC_DRIVER_HAS_CRC32_MPEG2
+	help
+	  Enables Nations Technologies N32 family CRC driver.
+
+	  The N32G45 CRC unit only implements the CRC-32/MPEG-2 algorithm
+	  (fixed polynomial 0x04C11DB7, non-reflected, no final XOR), so
+	  only the CRC32_MPEG2 computation type is supported.

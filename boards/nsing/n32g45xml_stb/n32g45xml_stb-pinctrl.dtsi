@@ -61,4 +61,49 @@
 		pinmux = <N32G45X_PINMUX('B', 13, ALTERNATE, CAN2_REMAP0)>;
 		slew-rate = "50mhz";
 	};
+
+	/* SPI1, default mapping (PA5/PA6/PA7) */
+	spi1_sck_pa5: spi1_sck_pa5 {
+		pinmux = <N32G45X_PINMUX('A', 5, ALTERNATE, SPI1_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	spi1_miso_pa6: spi1_miso_pa6 {
+		pinmux = <N32G45X_PINMUX('A', 6, GPIO_IN, NO_REMAP)>;
+	};
+
+	spi1_mosi_pa7: spi1_mosi_pa7 {
+		pinmux = <N32G45X_PINMUX('A', 7, ALTERNATE, SPI1_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	/* SPI2, default mapping (PB13/PB14/PB15) */
+	spi2_sck_pb13: spi2_sck_pb13 {
+		pinmux = <N32G45X_PINMUX('B', 13, ALTERNATE, SPI2_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	spi2_miso_pb14: spi2_miso_pb14 {
+		pinmux = <N32G45X_PINMUX('B', 14, GPIO_IN, NO_REMAP)>;
+	};
+
+	spi2_mosi_pb15: spi2_mosi_pb15 {
+		pinmux = <N32G45X_PINMUX('B', 15, ALTERNATE, SPI2_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	/* SPI3, remapped to PC10/PC11/PC12 (REMAP1, avoids LED conflict) */
+	spi3_sck_pc10: spi3_sck_pc10 {
+		pinmux = <N32G45X_PINMUX('C', 10, ALTERNATE, SPI3_REMAP1)>;
+		slew-rate = "50mhz";
+	};
+
+	spi3_miso_pc11: spi3_miso_pc11 {
+		pinmux = <N32G45X_PINMUX('C', 11, GPIO_IN, NO_REMAP)>;
+	};
+
+	spi3_mosi_pc12: spi3_mosi_pc12 {
+		pinmux = <N32G45X_PINMUX('C', 12, ALTERNATE, SPI3_REMAP1)>;
+		slew-rate = "50mhz";
+	};
 };
