@@ -28,16 +28,16 @@
 #include <zephyr/drivers/can.h>
 #include <zephyr/sys/printk.h>
 
-#define MSGQ_COUNT       4
-#define RX_WAIT_TIMEOUT  K_MSEC(1000)
+#define MSGQ_COUNT      4
+#define RX_WAIT_TIMEOUT K_MSEC(1000)
 
 /* Internal loopback test frame IDs */
-#define STD_TX_ID        0x111
-#define EXT_TX_ID        0x1234567
+#define STD_TX_ID 0x111
+#define EXT_TX_ID 0x1234567
 
 /* Cross-bus test frame IDs */
-#define CAN1_RX_STD_ID   0x200   /* sent by CAN2, received by CAN1 */
-#define CAN2_RX_STD_ID   0x100   /* sent by CAN1, received by CAN2 */
+#define CAN1_RX_STD_ID 0x200 /* sent by CAN2, received by CAN1 */
+#define CAN2_RX_STD_ID 0x100 /* sent by CAN1, received by CAN2 */
 
 CAN_MSGQ_DEFINE(rx_msgq_can1, MSGQ_COUNT);
 CAN_MSGQ_DEFINE(rx_msgq_can2, MSGQ_COUNT);
@@ -88,8 +88,7 @@ static void record(struct can_verify_ctx *ctx, const char *test, bool ok)
  * Add a filter, purge stale frames, send @p tx, then wait for the echoed frame
  * and verify its ID/DLC/payload. Used for the internal loopback test.
  */
-static bool loopback_exchange(struct can_verify_ctx *ctx,
-			      const struct can_filter *filter,
+static bool loopback_exchange(struct can_verify_ctx *ctx, const struct can_filter *filter,
 			      const struct can_frame *tx)
 {
 	struct can_frame rx;
@@ -120,14 +119,12 @@ static bool loopback_exchange(struct can_verify_ctx *ctx,
 	}
 
 	if (rx.id != tx->id) {
-		printk("%s: ID mismatch: sent 0x%x, received 0x%x\n",
-		       ctx->name, tx->id, rx.id);
+		printk("%s: ID mismatch: sent 0x%x, received 0x%x\n", ctx->name, tx->id, rx.id);
 		return false;
 	}
 
 	if (rx.dlc != tx->dlc) {
-		printk("%s: DLC mismatch: sent %u, received %u\n",
-		       ctx->name, tx->dlc, rx.dlc);
+		printk("%s: DLC mismatch: sent %u, received %u\n", ctx->name, tx->dlc, rx.dlc);
 		return false;
 	}
 
@@ -151,7 +148,7 @@ static int run_loopback_test(struct can_verify_ctx *ctx)
 		.id = EXT_TX_ID,
 		.mask = CAN_EXT_ID_MASK,
 	};
-	struct can_frame tx = { 0 };
+	struct can_frame tx = {0};
 	int ret;
 
 	if (!device_is_ready(ctx->dev)) {
@@ -159,14 +156,17 @@ static int run_loopback_test(struct can_verify_ctx *ctx)
 		return -ENODEV;
 	}
 
-	printk("%s: max filters: std=%d ext=%d\n", ctx->name,
-	       can_get_max_filters(ctx->dev, false),
+	printk("%s: max filters: std=%d ext=%d\n", ctx->name, can_get_max_filters(ctx->dev, false),
 	       can_get_max_filters(ctx->dev, true));
 
-	ret = can_set_mode(ctx->dev, CAN_MODE_LOOPBACK);
+	/*
+	 * Use silent loopback so this test remains entirely internal to the CAN
+	 * controller and does not require a PHY, an ACKing node, or a recessive
+	 * external bus level.
+	 */
+	ret = can_set_mode(ctx->dev, CAN_MODE_LOOPBACK | CAN_MODE_LISTENONLY);
 	if (ret != 0) {
-		printk("%s: can_set_mode(CAN_MODE_LOOPBACK) failed (err %d)\n",
-		       ctx->name, ret);
+		printk("%s: can_set_mode(silent loopback) failed (err %d)\n", ctx->name, ret);
 		return ret;
 	}
 
@@ -183,8 +183,7 @@ static int run_loopback_test(struct can_verify_ctx *ctx)
 	tx.data[1] = 0xad;
 	tx.data[2] = 0xbe;
 	tx.data[3] = 0xef;
-	record(ctx, "loopback standard frame",
-	       loopback_exchange(ctx, &std_filter, &tx));
+	record(ctx, "loopback standard frame", loopback_exchange(ctx, &std_filter, &tx));
 
 	/* Extended frame */
 	tx.flags = CAN_FRAME_IDE;
@@ -192,8 +191,7 @@ static int run_loopback_test(struct can_verify_ctx *ctx)
 	tx.dlc = 2U;
 	tx.data[0] = 0x12;
 	tx.data[1] = 0x34;
-	record(ctx, "loopback extended frame",
-	       loopback_exchange(ctx, &ext_filter, &tx));
+	record(ctx, "loopback extended frame", loopback_exchange(ctx, &ext_filter, &tx));
 
 	(void)can_stop(ctx->dev);
 
@@ -204,8 +202,7 @@ static int run_loopback_test(struct can_verify_ctx *ctx)
  * Send @p tx from @p sender and wait for it on @p receiver's RX msgq,
  * verifying ID/DLC/payload. Used for the cross-bus test.
  */
-static bool cross_bus_exchange(struct can_verify_ctx *sender,
-			       struct can_verify_ctx *receiver,
+static bool cross_bus_exchange(struct can_verify_ctx *sender, struct can_verify_ctx *receiver,
 			       const struct can_frame *tx)
 {
 	struct can_frame rx;
@@ -221,13 +218,11 @@ static bool cross_bus_exchange(struct can_verify_ctx *sender,
 
 	ret = k_msgq_get(receiver->rx_msgq, &rx, RX_WAIT_TIMEOUT);
 	if (ret != 0) {
-		printk("%s: timeout waiting for frame from %s\n",
-		       receiver->name, sender->name);
+		printk("%s: timeout waiting for frame from %s\n", receiver->name, sender->name);
 		return false;
 	}
 
-	if (rx.id != tx->id || rx.dlc != tx->dlc ||
-	    memcmp(rx.data, tx->data, tx->dlc) != 0) {
+	if (rx.id != tx->id || rx.dlc != tx->dlc || memcmp(rx.data, tx->data, tx->dlc) != 0) {
 		printk("%s: frame from %s mismatch\n", receiver->name, sender->name);
 		return false;
 	}
@@ -247,7 +242,7 @@ static int run_cross_bus_test(struct can_verify_ctx *ctx1, struct can_verify_ctx
 		.id = CAN2_RX_STD_ID,
 		.mask = CAN_STD_ID_MASK,
 	};
-	struct can_frame tx = { 0 };
+	struct can_frame tx = {0};
 	int f1, f2, ret;
 
 	if (!device_is_ready(ctx1->dev) || !device_is_ready(ctx2->dev)) {
@@ -290,8 +285,7 @@ static int run_cross_bus_test(struct can_verify_ctx *ctx1, struct can_verify_ctx
 	tx.data[0] = 0x01;
 	tx.data[1] = 0x02;
 	tx.data[2] = 0x03;
-	record(ctx2, "cross-bus frame CAN1->CAN2",
-	       cross_bus_exchange(ctx1, ctx2, &tx));
+	record(ctx2, "cross-bus frame CAN1->CAN2", cross_bus_exchange(ctx1, ctx2, &tx));
 
 	/* CAN2 -> CAN1 */
 	tx.id = CAN1_RX_STD_ID;
@@ -299,8 +293,7 @@ static int run_cross_bus_test(struct can_verify_ctx *ctx1, struct can_verify_ctx
 	tx.data[0] = 0x11;
 	tx.data[1] = 0x22;
 	tx.data[2] = 0x33;
-	record(ctx1, "cross-bus frame CAN2->CAN1",
-	       cross_bus_exchange(ctx2, ctx1, &tx));
+	record(ctx1, "cross-bus frame CAN2->CAN1", cross_bus_exchange(ctx2, ctx1, &tx));
 
 	can_remove_rx_filter(ctx1->dev, f1);
 	can_remove_rx_filter(ctx2->dev, f2);
@@ -313,13 +306,26 @@ static int run_cross_bus_test(struct can_verify_ctx *ctx1, struct can_verify_ctx
 
 int main(void)
 {
+	int ret;
+
 	printk("N32 bxCAN driver verification\n");
 
 	if (IS_ENABLED(CONFIG_CAN_SAMPLE_CROSS_BUS)) {
-		(void)run_cross_bus_test(&can1_ctx, &can2_ctx);
+		ret = run_cross_bus_test(&can1_ctx, &can2_ctx);
+		if (ret != 0) {
+			can1_ctx.fail++;
+			can2_ctx.fail++;
+		}
 	} else {
-		(void)run_loopback_test(&can1_ctx);
-		(void)run_loopback_test(&can2_ctx);
+		ret = run_loopback_test(&can1_ctx);
+		if (ret != 0) {
+			can1_ctx.fail++;
+		}
+
+		ret = run_loopback_test(&can2_ctx);
+		if (ret != 0) {
+			can2_ctx.fail++;
+		}
 	}
 
 	printk("can1: %u pass, %u fail\n", can1_ctx.pass, can1_ctx.fail);

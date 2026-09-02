@@ -27,12 +27,12 @@
 
 LOG_MODULE_REGISTER(can_n32, CONFIG_CAN_LOG_LEVEL);
 
-#define CAN_INIT_TIMEOUT  (10 * (sys_clock_hw_cycles_per_sec() / MSEC_PER_SEC))
+#define CAN_INIT_TIMEOUT (10 * (sys_clock_hw_cycles_per_sec() / MSEC_PER_SEC))
 
 #define DT_DRV_COMPAT nsing_n32_bxcan
 
 #define CAN_N32_NUM_FILTER_BANKS (14)
-#define CAN_N32_MAX_FILTER_ID \
+#define CAN_N32_MAX_FILTER_ID                                                                      \
 	(CONFIG_CAN_N32_BXCAN_MAX_EXT_ID_FILTERS + CONFIG_CAN_N32_BXCAN_MAX_STD_ID_FILTERS)
 
 /* CAN frame identifier register (RMI) bit fields */
@@ -43,13 +43,18 @@ LOG_MODULE_REGISTER(can_n32, CONFIG_CAN_LOG_LEVEL);
 #define CAN_RMI_RTR        (0x1UL << 1U)
 #define CAN_RMI_IDE        (0x1UL << 2U)
 
+/* 16-bit filter scale encoding (standard identifier filters) */
+#define CAN_FILTER_STD_ID_POS  5U
+#define CAN_FILTER_STD_RTR_POS 4U
+#define CAN_FILTER_STD_IDE_POS 3U
+
 /* CAN frame data / status register (RMDT) bit fields */
-#define CAN_RMDT_DLC_Pos   (0U)
-#define CAN_RMDT_DLC_Msk   (0xFUL << CAN_RMDT_DLC_Pos)
-#define CAN_RMDT_FMI_Pos   (8U)
-#define CAN_RMDT_FMI_Msk   (0xFFUL << CAN_RMDT_FMI_Pos)
-#define CAN_RMDT_TIME_Pos  (16U)
-#define CAN_RMDT_TIME_Msk  (0xFFFFUL << CAN_RMDT_TIME_Pos)
+#define CAN_RMDT_DLC_Pos  (0U)
+#define CAN_RMDT_DLC_Msk  (0xFUL << CAN_RMDT_DLC_Pos)
+#define CAN_RMDT_FMI_Pos  (8U)
+#define CAN_RMDT_FMI_Msk  (0xFFUL << CAN_RMDT_FMI_Pos)
+#define CAN_RMDT_TIME_Pos (16U)
+#define CAN_RMDT_TIME_Msk (0xFFFFUL << CAN_RMDT_TIME_Pos)
 
 /*
  * Register bit fields of the N32 bxCAN IP. The N32G45x CAN peripheral is a
@@ -59,91 +64,91 @@ LOG_MODULE_REGISTER(can_n32, CONFIG_CAN_LOG_LEVEL);
  */
 
 /* Control register (MCTRL) bit fields */
-#define CAN_MCTRL_INRQ       (0x1UL << 0U)
-#define CAN_MCTRL_SLEEP      (0x1UL << 1U)
+#define CAN_MCTRL_INRQ  (0x1UL << 0U)
+#define CAN_MCTRL_SLEEP (0x1UL << 1U)
 /* CAN_MCTRL_TXFP/RFLM/NART/ABOM/TTCM are provided by the N32 HAL */
-#define CAN_MCTRL_AWUM       (0x1UL << 5U)
+#define CAN_MCTRL_AWUM  (0x1UL << 5U)
 
 /* Status register (MSTS) bit fields */
-#define CAN_MSTS_INAK        (0x1UL << 0U)
-#define CAN_MSTS_SLAK        (0x1UL << 1U)
-#define CAN_MSTS_ERRI        (0x1UL << 2U)
+#define CAN_MSTS_INAK (0x1UL << 0U)
+#define CAN_MSTS_SLAK (0x1UL << 1U)
+#define CAN_MSTS_ERRI (0x1UL << 2U)
 
 /* Transmit status register (TSTS) bit fields */
-#define CAN_TSTS_RQCP0       (0x1UL << 0U)
-#define CAN_TSTS_TXOK0       (0x1UL << 1U)
-#define CAN_TSTS_ALST0       (0x1UL << 2U)
-#define CAN_TSTS_TERR0       (0x1UL << 3U)
-#define CAN_TSTS_ABRQ0       (0x1UL << 7U)
-#define CAN_TSTS_RQCP1       (0x1UL << 8U)
-#define CAN_TSTS_TXOK1       (0x1UL << 9U)
-#define CAN_TSTS_ALST1       (0x1UL << 10U)
-#define CAN_TSTS_TERR1       (0x1UL << 11U)
-#define CAN_TSTS_ABRQ1       (0x1UL << 15U)
-#define CAN_TSTS_RQCP2       (0x1UL << 16U)
-#define CAN_TSTS_TXOK2       (0x1UL << 17U)
-#define CAN_TSTS_ALST2       (0x1UL << 18U)
-#define CAN_TSTS_TERR2       (0x1UL << 19U)
-#define CAN_TSTS_ABRQ2       (0x1UL << 23U)
-#define CAN_TSTS_TME         (0x7UL << 26U)
-#define CAN_TSTS_TME0        (0x1UL << 26U)
-#define CAN_TSTS_TME1        (0x1UL << 27U)
-#define CAN_TSTS_TME2        (0x1UL << 28U)
+#define CAN_TSTS_RQCP0 (0x1UL << 0U)
+#define CAN_TSTS_TXOK0 (0x1UL << 1U)
+#define CAN_TSTS_ALST0 (0x1UL << 2U)
+#define CAN_TSTS_TERR0 (0x1UL << 3U)
+#define CAN_TSTS_ABRQ0 (0x1UL << 7U)
+#define CAN_TSTS_RQCP1 (0x1UL << 8U)
+#define CAN_TSTS_TXOK1 (0x1UL << 9U)
+#define CAN_TSTS_ALST1 (0x1UL << 10U)
+#define CAN_TSTS_TERR1 (0x1UL << 11U)
+#define CAN_TSTS_ABRQ1 (0x1UL << 15U)
+#define CAN_TSTS_RQCP2 (0x1UL << 16U)
+#define CAN_TSTS_TXOK2 (0x1UL << 17U)
+#define CAN_TSTS_ALST2 (0x1UL << 18U)
+#define CAN_TSTS_TERR2 (0x1UL << 19U)
+#define CAN_TSTS_ABRQ2 (0x1UL << 23U)
+#define CAN_TSTS_TME   (0x7UL << 26U)
+#define CAN_TSTS_TME0  (0x1UL << 26U)
+#define CAN_TSTS_TME1  (0x1UL << 27U)
+#define CAN_TSTS_TME2  (0x1UL << 28U)
 
 /* Receive FIFO 0 register (RFF0) bit fields */
-#define CAN_RFF0_FMP0        (0x3UL << 0U)
-#define CAN_RFF0_FOVR0       (0x1UL << 4U)
-#define CAN_RFF0_RFOM0       (0x1UL << 5U)
+#define CAN_RFF0_FMP0  (0x3UL << 0U)
+#define CAN_RFF0_FOVR0 (0x1UL << 4U)
+#define CAN_RFF0_RFOM0 (0x1UL << 5U)
 
 /* Interrupt enable register (INTE) bit fields */
-#define CAN_INTE_TMEIE       (0x1UL << 0U)
-#define CAN_INTE_FMPIE0      (0x1UL << 1U)
-#define CAN_INTE_FMPIE1      (0x1UL << 4U)
-#define CAN_INTE_EWGIE       (0x1UL << 8U)
-#define CAN_INTE_EPVIE       (0x1UL << 9U)
-#define CAN_INTE_BOFIE       (0x1UL << 10U)
-#define CAN_INTE_LECIE       (0x1UL << 11U)
-#define CAN_INTE_ERRIE       (0x1UL << 15U)
+#define CAN_INTE_TMEIE  (0x1UL << 0U)
+#define CAN_INTE_FMPIE0 (0x1UL << 1U)
+#define CAN_INTE_FMPIE1 (0x1UL << 4U)
+#define CAN_INTE_EWGIE  (0x1UL << 8U)
+#define CAN_INTE_EPVIE  (0x1UL << 9U)
+#define CAN_INTE_BOFIE  (0x1UL << 10U)
+#define CAN_INTE_LECIE  (0x1UL << 11U)
+#define CAN_INTE_ERRIE  (0x1UL << 15U)
 
 /* Error status register (ESTS) bit fields */
-#define CAN_ESTS_EWGF        (0x1UL << 0U)
-#define CAN_ESTS_EPVF        (0x1UL << 1U)
-#define CAN_ESTS_BOFF        (0x1UL << 2U)
-#define CAN_ESTS_LEC_Pos     (4U)
-#define CAN_ESTS_LEC_Msk     (0x7UL << CAN_ESTS_LEC_Pos)
+#define CAN_ESTS_EWGF    (0x1UL << 0U)
+#define CAN_ESTS_EPVF    (0x1UL << 1U)
+#define CAN_ESTS_BOFF    (0x1UL << 2U)
+#define CAN_ESTS_LEC_Pos (4U)
+#define CAN_ESTS_LEC_Msk (0x7UL << CAN_ESTS_LEC_Pos)
 /* CAN_ESTS_LEC_0/1/2 are provided by the N32 HAL */
-#define CAN_ESTS_TEC_Pos     (16U)
-#define CAN_ESTS_TEC_Msk     (0xFFUL << CAN_ESTS_TEC_Pos)
-#define CAN_ESTS_REC_Pos     (24U)
-#define CAN_ESTS_REC_Msk     (0xFFUL << CAN_ESTS_REC_Pos)
+#define CAN_ESTS_TEC_Pos (16U)
+#define CAN_ESTS_TEC_Msk (0xFFUL << CAN_ESTS_TEC_Pos)
+#define CAN_ESTS_REC_Pos (24U)
+#define CAN_ESTS_REC_Msk (0xFFUL << CAN_ESTS_REC_Pos)
 
 /* Bit timing register (BTIM) bit fields */
-#define CAN_BTIM_BRP_Pos     (0U)
-#define CAN_BTIM_BRP_Msk     (0x3FFUL << CAN_BTIM_BRP_Pos)
-#define CAN_BTIM_TS1_Pos     (16U)
-#define CAN_BTIM_TS1_Msk     (0xFUL << CAN_BTIM_TS1_Pos)
-#define CAN_BTIM_TS2_Pos     (20U)
-#define CAN_BTIM_TS2_Msk     (0x7UL << CAN_BTIM_TS2_Pos)
-#define CAN_BTIM_SJW_Pos     (24U)
-#define CAN_BTIM_SJW_Msk     (0x3UL << CAN_BTIM_SJW_Pos)
-#define CAN_BTIM_LBKM        (0x1UL << 30U)
-#define CAN_BTIM_SILM        (0x1UL << 31U)
+#define CAN_BTIM_BRP_Pos (0U)
+#define CAN_BTIM_BRP_Msk (0x3FFUL << CAN_BTIM_BRP_Pos)
+#define CAN_BTIM_TS1_Pos (16U)
+#define CAN_BTIM_TS1_Msk (0xFUL << CAN_BTIM_TS1_Pos)
+#define CAN_BTIM_TS2_Pos (20U)
+#define CAN_BTIM_TS2_Msk (0x7UL << CAN_BTIM_TS2_Pos)
+#define CAN_BTIM_SJW_Pos (24U)
+#define CAN_BTIM_SJW_Msk (0x3UL << CAN_BTIM_SJW_Pos)
+#define CAN_BTIM_LBKM    (0x1UL << 30U)
+#define CAN_BTIM_SILM    (0x1UL << 31U)
 
 /* TX mailbox identifier register (TMI) bit fields */
-#define CAN_TMI_TXRQ         (0x1UL << 0U)
-#define CAN_TMI_RTR          (0x1UL << 1U)
-#define CAN_TMI_IDE          (0x1UL << 2U)
-#define CAN_TMI_EXID_Pos     (3U)
-#define CAN_TMI_STID_POS     (21U)
+#define CAN_TMI_TXRQ     (0x1UL << 0U)
+#define CAN_TMI_RTR      (0x1UL << 1U)
+#define CAN_TMI_IDE      (0x1UL << 2U)
+#define CAN_TMI_EXID_Pos (3U)
+#define CAN_TMI_STID_POS (21U)
 
 /* TX mailbox data/status register (TMDT) bit fields */
-#define CAN_TMDT_DLC_Pos     (0U)
+#define CAN_TMDT_DLC_Pos (0U)
 
 /* Filter mode control register (FMC) bit fields */
-#define CAN_FMC_FINIT        (0x1UL << 0U)
+#define CAN_FMC_FINIT (0x1UL << 0U)
 
-#if (CONFIG_CAN_N32_BXCAN_MAX_STD_ID_FILTERS + CONFIG_CAN_N32_BXCAN_MAX_EXT_ID_FILTERS * 2) > \
-							(CAN_N32_NUM_FILTER_BANKS * 2)
+#if (CONFIG_CAN_N32_BXCAN_MAX_STD_ID_FILTERS + CONFIG_CAN_N32_BXCAN_MAX_EXT_ID_FILTERS * 2) >      \
+	(CAN_N32_NUM_FILTER_BANKS * 2)
 #error Number of configured filters exceeds available filter bank slots.
 #endif
 
@@ -168,8 +173,8 @@ struct can_n32_data {
 
 struct can_n32_config {
 	const struct can_driver_config common;
-	CAN_Module *can;   /*!< CAN Registers */
-	uint32_t clk_cfg;  /*!< RCC clock cell for this CAN instance */
+	CAN_Module *can;  /*!< CAN Registers */
+	uint32_t clk_cfg; /*!< RCC clock cell for this CAN instance */
 	void (*config_irq)(CAN_Module *can);
 	const struct pinctrl_dev_config *pcfg;
 };
@@ -273,10 +278,8 @@ static int can_n32_get_state(const struct device *dev, enum can_state *state,
 	}
 
 	if (err_cnt != NULL) {
-		err_cnt->tx_err_cnt =
-			((can->ESTS & CAN_ESTS_TEC_Msk) >> CAN_ESTS_TEC_Pos);
-		err_cnt->rx_err_cnt =
-			((can->ESTS & CAN_ESTS_REC_Msk) >> CAN_ESTS_REC_Pos);
+		err_cnt->tx_err_cnt = ((can->ESTS & CAN_ESTS_TEC_Msk) >> CAN_ESTS_TEC_Pos);
+		err_cnt->rx_err_cnt = ((can->ESTS & CAN_ESTS_REC_Msk) >> CAN_ESTS_REC_Pos);
 	}
 
 	return 0;
@@ -343,33 +346,33 @@ static inline void can_n32_tx_isr_handler(const struct device *dev)
 	bus_off = can->ESTS & CAN_ESTS_BOFF;
 
 	if ((can->TSTS & CAN_TSTS_RQCP0) | bus_off) {
-		status = can->TSTS & CAN_TSTS_TXOK0 ? 0  :
-			 can->TSTS & CAN_TSTS_TERR0 ? -EIO :
-			 can->TSTS & CAN_TSTS_ALST0 ? -EBUSY :
-						  bus_off ? -ENETUNREACH :
-							    -EIO;
+		status = can->TSTS & CAN_TSTS_TXOK0   ? 0
+			 : can->TSTS & CAN_TSTS_TERR0 ? -EIO
+			 : can->TSTS & CAN_TSTS_ALST0 ? -EBUSY
+			 : bus_off                    ? -ENETUNREACH
+						      : -EIO;
 		/* clear the request. */
 		can->TSTS |= CAN_TSTS_RQCP0;
 		can_n32_signal_tx_complete(dev, &data->mb0, status);
 	}
 
 	if ((can->TSTS & CAN_TSTS_RQCP1) | bus_off) {
-		status = can->TSTS & CAN_TSTS_TXOK1 ? 0  :
-			 can->TSTS & CAN_TSTS_TERR1 ? -EIO :
-			 can->TSTS & CAN_TSTS_ALST1 ? -EBUSY :
-			 bus_off                  ? -ENETUNREACH :
-						    -EIO;
+		status = can->TSTS & CAN_TSTS_TXOK1   ? 0
+			 : can->TSTS & CAN_TSTS_TERR1 ? -EIO
+			 : can->TSTS & CAN_TSTS_ALST1 ? -EBUSY
+			 : bus_off                    ? -ENETUNREACH
+						      : -EIO;
 		/* clear the request. */
 		can->TSTS |= CAN_TSTS_RQCP1;
 		can_n32_signal_tx_complete(dev, &data->mb1, status);
 	}
 
 	if ((can->TSTS & CAN_TSTS_RQCP2) | bus_off) {
-		status = can->TSTS & CAN_TSTS_TXOK2 ? 0  :
-			 can->TSTS & CAN_TSTS_TERR2 ? -EIO :
-			 can->TSTS & CAN_TSTS_ALST2 ? -EBUSY :
-			 bus_off                  ? -ENETUNREACH :
-						    -EIO;
+		status = can->TSTS & CAN_TSTS_TXOK2   ? 0
+			 : can->TSTS & CAN_TSTS_TERR2 ? -EIO
+			 : can->TSTS & CAN_TSTS_ALST2 ? -EBUSY
+			 : bus_off                    ? -ENETUNREACH
+						      : -EIO;
 		/* clear the request. */
 		can->TSTS |= CAN_TSTS_RQCP2;
 		can_n32_signal_tx_complete(dev, &data->mb2, status);
@@ -424,11 +427,18 @@ static int can_n32_leave_init_mode(CAN_Module *can)
 {
 	uint32_t start_time;
 
-	can->MCTRL &= ~CAN_MCTRL_INRQ;
+	/*
+	 * The N32 reference HAL enters normal mode by clearing both the
+	 * initialization and sleep requests.  Clearing only INRQ can leave the
+	 * controller in sleep mode, in which case INAK does not reliably clear.
+	 */
+	can->MCTRL &= ~(CAN_MCTRL_SLEEP | CAN_MCTRL_INRQ);
 	start_time = k_cycle_get_32();
 
-	while ((can->MSTS & CAN_MSTS_INAK) != 0U) {
+	while ((can->MSTS & (CAN_MSTS_SLAK | CAN_MSTS_INAK)) != 0U) {
 		if (k_cycle_get_32() - start_time > CAN_INIT_TIMEOUT) {
+			LOG_ERR("normal mode timeout: MCTRL=0x%08x MSTS=0x%08x", can->MCTRL,
+				can->MSTS);
 			return -EAGAIN;
 		}
 	}
@@ -614,8 +624,7 @@ static int can_n32_set_mode(const struct device *dev, can_mode_t mode)
 	return 0;
 }
 
-static int can_n32_set_timing(const struct device *dev,
-			      const struct can_timing *timing)
+static int can_n32_set_timing(const struct device *dev, const struct can_timing *timing)
 {
 	const struct can_n32_config *cfg = dev->config;
 	CAN_Module *can = cfg->can;
@@ -628,12 +637,12 @@ static int can_n32_set_timing(const struct device *dev,
 		return -EBUSY;
 	}
 
-	can->BTIM = (can->BTIM & ~(CAN_BTIM_SJW_Msk | CAN_BTIM_BRP_Msk |
-				   CAN_BTIM_TS1_Msk | CAN_BTIM_TS2_Msk)) |
-	     (((timing->sjw        - 1) << CAN_BTIM_SJW_Pos) & CAN_BTIM_SJW_Msk) |
-	     (((timing->phase_seg1 - 1) << CAN_BTIM_TS1_Pos) & CAN_BTIM_TS1_Msk) |
-	     (((timing->phase_seg2 - 1) << CAN_BTIM_TS2_Pos) & CAN_BTIM_TS2_Msk) |
-	     (((timing->prescaler  - 1) << CAN_BTIM_BRP_Pos) & CAN_BTIM_BRP_Msk);
+	can->BTIM = (can->BTIM &
+		     ~(CAN_BTIM_SJW_Msk | CAN_BTIM_BRP_Msk | CAN_BTIM_TS1_Msk | CAN_BTIM_TS2_Msk)) |
+		    (((timing->sjw - 1) << CAN_BTIM_SJW_Pos) & CAN_BTIM_SJW_Msk) |
+		    (((timing->phase_seg1 - 1) << CAN_BTIM_TS1_Pos) & CAN_BTIM_TS1_Msk) |
+		    (((timing->phase_seg2 - 1) << CAN_BTIM_TS2_Pos) & CAN_BTIM_TS2_Msk) |
+		    (((timing->prescaler - 1) << CAN_BTIM_BRP_Pos) & CAN_BTIM_BRP_Msk);
 
 	k_mutex_unlock(&data->inst_mutex);
 
@@ -648,9 +657,7 @@ static int can_n32_get_core_clock(const struct device *dev, uint32_t *rate)
 
 	clk = DEVICE_DT_GET(DT_NODELABEL(rcc));
 
-	ret = clock_control_get_rate(clk,
-				     (clock_control_subsys_t) &cfg->clk_cfg,
-				     rate);
+	ret = clock_control_get_rate(clk, (clock_control_subsys_t)&cfg->clk_cfg, rate);
 	if (ret != 0) {
 		LOG_ERR("Failed call clock_control_get_rate: return [%d]", ret);
 		return -EIO;
@@ -675,7 +682,7 @@ static int can_n32_init(const struct device *dev)
 	const struct can_n32_config *cfg = dev->config;
 	struct can_n32_data *data = dev->data;
 	CAN_Module *can = cfg->can;
-	struct can_timing timing = { 0 };
+	struct can_timing timing = {0};
 	const struct device *clk = DEVICE_DT_GET(DT_NODELABEL(rcc));
 	int ret;
 
@@ -689,7 +696,7 @@ static int can_n32_init(const struct device *dev)
 		}
 	}
 
-	ret = clock_control_on(clk, (clock_control_subsys_t) &cfg->clk_cfg);
+	ret = clock_control_on(clk, (clock_control_subsys_t)&cfg->clk_cfg);
 	if (ret != 0) {
 		LOG_ERR("clock control on failed: %d", ret);
 		return -EIO;
@@ -726,8 +733,8 @@ static int can_n32_init(const struct device *dev)
 	can->FS1 |= ((1U << CONFIG_CAN_N32_BXCAN_MAX_EXT_ID_FILTERS) - 1);
 	can->FMC &= ~CAN_FMC_FINIT;
 
-	can->MCTRL &= ~CAN_MCTRL_TTCM & ~CAN_MCTRL_ABOM & ~CAN_MCTRL_AWUM &
-		      ~CAN_MCTRL_NART & ~CAN_MCTRL_RFLM & ~CAN_MCTRL_TXFP;
+	can->MCTRL &= ~CAN_MCTRL_TTCM & ~CAN_MCTRL_ABOM & ~CAN_MCTRL_AWUM & ~CAN_MCTRL_NART &
+		      ~CAN_MCTRL_RFLM & ~CAN_MCTRL_TXFP;
 #ifdef CONFIG_CAN_RX_TIMESTAMP
 	can->MCTRL |= CAN_MCTRL_TTCM;
 #endif
@@ -735,14 +742,13 @@ static int can_n32_init(const struct device *dev)
 	/* Enable automatic bus-off recovery */
 	can->MCTRL |= CAN_MCTRL_ABOM;
 
-	ret = can_calc_timing(dev, &timing, cfg->common.bitrate,
-			      cfg->common.sample_point);
+	ret = can_calc_timing(dev, &timing, cfg->common.bitrate, cfg->common.sample_point);
 	if (ret == -EINVAL) {
 		LOG_ERR("Can't find timing for given param");
 		return -EIO;
 	}
-	LOG_DBG("Presc: %d, TS1: %d, TS2: %d",
-		timing.prescaler, timing.phase_seg1, timing.phase_seg2);
+	LOG_DBG("Presc: %d, TS1: %d, TS2: %d", timing.prescaler, timing.phase_seg1,
+		timing.phase_seg2);
 	LOG_DBG("Sample-point err : %d", ret);
 
 	ret = can_set_timing(dev, &timing);
@@ -764,8 +770,7 @@ static int can_n32_init(const struct device *dev)
 }
 
 static void can_n32_set_state_change_callback(const struct device *dev,
-					      can_state_change_callback_t cb,
-					      void *user_data)
+					      can_state_change_callback_t cb, void *user_data)
 {
 	struct can_n32_data *data = dev->data;
 	const struct can_n32_config *cfg = dev->config;
@@ -831,8 +836,7 @@ done:
 #endif /* CONFIG_CAN_MANUAL_RECOVERY_MODE */
 
 static int can_n32_send(const struct device *dev, const struct can_frame *frame,
-			k_timeout_t timeout, can_tx_callback_t callback,
-			void *user_data)
+			k_timeout_t timeout, can_tx_callback_t callback, void *user_data)
 {
 	const struct can_n32_config *cfg = dev->config;
 	struct can_n32_data *data = dev->data;
@@ -842,13 +846,12 @@ static int can_n32_send(const struct device *dev, const struct can_frame *frame,
 	struct can_n32_mailbox *mb = NULL;
 
 	LOG_DBG("Sending %d bytes on %s. "
-		    "Id: 0x%x, "
-		    "ID type: %s, "
-		    "Remote Frame: %s"
-		    , frame->dlc, dev->name
-		    , frame->id
-		    , (frame->flags & CAN_FRAME_IDE) != 0 ? "extended" : "standard"
-		    , (frame->flags & CAN_FRAME_RTR) != 0 ? "yes" : "no");
+		"Id: 0x%x, "
+		"ID type: %s, "
+		"Remote Frame: %s",
+		frame->dlc, dev->name, frame->id,
+		(frame->flags & CAN_FRAME_IDE) != 0 ? "extended" : "standard",
+		(frame->flags & CAN_FRAME_RTR) != 0 ? "yes" : "no");
 
 	if (frame->dlc > CAN_MAX_DLC) {
 		LOG_ERR("DLC of %d exceeds maximum (%d)", frame->dlc, CAN_MAX_DLC);
@@ -907,8 +910,7 @@ static int can_n32_send(const struct device *dev, const struct can_frame *frame,
 	mailbox->TMI &= CAN_TMI_TXRQ;
 
 	if ((frame->flags & CAN_FRAME_IDE) != 0) {
-		mailbox->TMI |= (frame->id << CAN_TMI_EXID_Pos)
-				| CAN_TMI_IDE;
+		mailbox->TMI |= (frame->id << CAN_TMI_EXID_Pos) | CAN_TMI_IDE;
 	} else {
 		mailbox->TMI |= (frame->id << CAN_TMI_STID_POS);
 	}
@@ -928,8 +930,8 @@ static int can_n32_send(const struct device *dev, const struct can_frame *frame,
 	return 0;
 }
 
-static void can_n32_set_filter_bank(int filter_id, CAN_FilterRegister_Param *filter_reg,
-				    bool ide, uint32_t id, uint32_t mask)
+static void can_n32_set_filter_bank(int filter_id, CAN_FilterRegister_Param *filter_reg, bool ide,
+				    uint32_t id, uint32_t mask)
 {
 	if (ide) {
 		filter_reg->FR1 = id;
@@ -949,29 +951,25 @@ static inline uint32_t can_n32_filter_to_std_mask(const struct can_filter *filte
 {
 	uint32_t rtr_mask = !IS_ENABLED(CONFIG_CAN_ACCEPT_RTR);
 
-	return  (filter->mask << CAN_RMI_STD_ID_POS) |
-		(rtr_mask << 1U) |
-		(1U << 2U);
+	return (filter->mask << CAN_FILTER_STD_ID_POS) | (rtr_mask << CAN_FILTER_STD_RTR_POS) |
+	       (1U << CAN_FILTER_STD_IDE_POS);
 }
 
 static inline uint32_t can_n32_filter_to_ext_mask(const struct can_filter *filter)
 {
 	uint32_t rtr_mask = !IS_ENABLED(CONFIG_CAN_ACCEPT_RTR);
 
-	return  (filter->mask << CAN_RMI_EXID_Pos) |
-		(rtr_mask << 1U) |
-		(1U << 2U);
+	return (filter->mask << CAN_RMI_EXID_Pos) | (rtr_mask << 1U) | (1U << 2U);
 }
 
 static inline uint32_t can_n32_filter_to_std_id(const struct can_filter *filter)
 {
-	return  (filter->id  << CAN_RMI_STD_ID_POS);
+	return (filter->id << CAN_FILTER_STD_ID_POS);
 }
 
 static inline uint32_t can_n32_filter_to_ext_id(const struct can_filter *filter)
 {
-	return  (filter->id << CAN_RMI_EXID_Pos) |
-		(1U << 2U);
+	return (filter->id << CAN_RMI_EXID_Pos) | (1U << 2U);
 }
 
 static inline int can_n32_set_filter(const struct device *dev, const struct can_filter *filter)
@@ -1000,23 +998,21 @@ static inline int can_n32_set_filter(const struct device *dev, const struct can_
 				id = can_n32_filter_to_std_id(filter);
 				mask = can_n32_filter_to_std_mask(filter);
 				filter_id = CONFIG_CAN_N32_BXCAN_MAX_EXT_ID_FILTERS + i;
-				bank_num = CONFIG_CAN_N32_BXCAN_MAX_EXT_ID_FILTERS +
-					i / 2;
+				bank_num = CONFIG_CAN_N32_BXCAN_MAX_EXT_ID_FILTERS + i / 2;
 				break;
 			}
 		}
 	}
 
 	if (filter_id != -ENOSPC) {
-		LOG_DBG("Adding filter_id %d, CAN ID: 0x%x, mask: 0x%x",
-			filter_id, filter->id, filter->mask);
+		LOG_DBG("Adding filter_id %d, CAN ID: 0x%x, mask: 0x%x", filter_id, filter->id,
+			filter->mask);
 
 		/* set the filter init mode */
 		can->FMC |= CAN_FMC_FINIT;
 
 		can_n32_set_filter_bank(filter_id, &can->sFilterRegister[bank_num],
-					(filter->flags & CAN_FILTER_IDE) != 0,
-					id, mask);
+					(filter->flags & CAN_FILTER_IDE) != 0, id, mask);
 
 		can->FA1 |= 1U << bank_num;
 		can->FMC &= ~(CAN_FMC_FINIT);
@@ -1039,8 +1035,8 @@ static inline int can_n32_set_filter(const struct device *dev, const struct can_
  *
  * Currently, all filter banks are assigned to FIFO 0 and FIFO 1 is not used.
  */
-static int can_n32_add_rx_filter(const struct device *dev, can_rx_callback_t cb,
-				 void *cb_arg, const struct can_filter *filter)
+static int can_n32_add_rx_filter(const struct device *dev, can_rx_callback_t cb, void *cb_arg,
+				 const struct can_filter *filter)
 {
 	struct can_n32_data *data = dev->data;
 	int filter_id;
@@ -1116,8 +1112,7 @@ static void can_n32_remove_rx_filter(const struct device *dev, int filter_id)
 
 	can->FMC |= CAN_FMC_FINIT;
 
-	can_n32_set_filter_bank(filter_id, &can->sFilterRegister[bank_num],
-				ide, 0, 0xFFFFFFFF);
+	can_n32_set_filter_bank(filter_id, &can->sFilterRegister[bank_num], ide, 0, 0xFFFFFFFF);
 
 	if (bank_unused) {
 		can->FA1 &= ~(1U << bank_num);
@@ -1129,86 +1124,78 @@ static void can_n32_remove_rx_filter(const struct device *dev, int filter_id)
 	k_mutex_unlock(&data->inst_mutex);
 }
 
-static DEVICE_API(can, can_api_funcs) = {
-	.get_capabilities = can_n32_get_capabilities,
-	.start = can_n32_start,
-	.stop = can_n32_stop,
-	.set_mode = can_n32_set_mode,
-	.set_timing = can_n32_set_timing,
-	.send = can_n32_send,
-	.add_rx_filter = can_n32_add_rx_filter,
-	.remove_rx_filter = can_n32_remove_rx_filter,
-	.get_state = can_n32_get_state,
+static DEVICE_API(can,
+		  can_api_funcs) = {.get_capabilities = can_n32_get_capabilities,
+				    .start = can_n32_start,
+				    .stop = can_n32_stop,
+				    .set_mode = can_n32_set_mode,
+				    .set_timing = can_n32_set_timing,
+				    .send = can_n32_send,
+				    .add_rx_filter = can_n32_add_rx_filter,
+				    .remove_rx_filter = can_n32_remove_rx_filter,
+				    .get_state = can_n32_get_state,
 #ifdef CONFIG_CAN_MANUAL_RECOVERY_MODE
-	.recover = can_n32_recover,
+				    .recover = can_n32_recover,
 #endif /* CONFIG_CAN_MANUAL_RECOVERY_MODE */
-	.set_state_change_callback = can_n32_set_state_change_callback,
-	.get_core_clock = can_n32_get_core_clock,
-	.get_max_filters = can_n32_get_max_filters,
-	.timing_min = {
-		.sjw = 0x1,
-		.prop_seg = 0x00,
-		.phase_seg1 = 0x01,
-		.phase_seg2 = 0x01,
-		.prescaler = 0x01
-	},
-	.timing_max = {
-		.sjw = 0x04,
-		.prop_seg = 0x00,
-		.phase_seg1 = 0x10,
-		.phase_seg2 = 0x08,
-		.prescaler = 0x400
-	}
-};
+				    .set_state_change_callback = can_n32_set_state_change_callback,
+				    .get_core_clock = can_n32_get_core_clock,
+				    .get_max_filters = can_n32_get_max_filters,
+				    .timing_min = {.sjw = 0x1,
+						   .prop_seg = 0x00,
+						   .phase_seg1 = 0x01,
+						   .phase_seg2 = 0x01,
+						   .prescaler = 0x01},
+				    .timing_max = {.sjw = 0x04,
+						   .prop_seg = 0x00,
+						   .phase_seg1 = 0x10,
+						   .phase_seg2 = 0x08,
+						   .prescaler = 0x400}};
 
-#define CAN_N32_IRQ_INST(inst)							\
-	static void config_can_##inst##_irq(CAN_Module *can)			\
-	{									\
-		IRQ_CONNECT(DT_INST_IRQ_BY_NAME(inst, rx, irq),			\
-			    DT_INST_IRQ_BY_NAME(inst, rx, priority),		\
-			    can_n32_rx_isr, DEVICE_DT_INST_GET(inst), 0);	\
-		irq_enable(DT_INST_IRQ_BY_NAME(inst, rx, irq));			\
-		IRQ_CONNECT(DT_INST_IRQ_BY_NAME(inst, tx, irq),			\
-			    DT_INST_IRQ_BY_NAME(inst, tx, priority),		\
-			    can_n32_tx_isr, DEVICE_DT_INST_GET(inst), 0);	\
-		irq_enable(DT_INST_IRQ_BY_NAME(inst, tx, irq));			\
-		IRQ_CONNECT(DT_INST_IRQ_BY_NAME(inst, sce, irq),		\
-			    DT_INST_IRQ_BY_NAME(inst, sce, priority),		\
-			    can_n32_state_change_isr,				\
-			    DEVICE_DT_INST_GET(inst), 0);			\
-		irq_enable(DT_INST_IRQ_BY_NAME(inst, sce, irq));		\
-		can->INTE |= CAN_INTE_TMEIE | CAN_INTE_ERRIE | CAN_INTE_FMPIE0 |	\
-			    CAN_INTE_FMPIE1 | CAN_INTE_BOFIE;			\
-		if (IS_ENABLED(CONFIG_CAN_STATS)) {				\
-			can->INTE |= CAN_INTE_LECIE;				\
-		}								\
+#define CAN_N32_IRQ_INST(inst)                                                                     \
+	static void config_can_##inst##_irq(CAN_Module *can)                                       \
+	{                                                                                          \
+		IRQ_CONNECT(DT_INST_IRQ_BY_NAME(inst, rx, irq),                                    \
+			    DT_INST_IRQ_BY_NAME(inst, rx, priority), can_n32_rx_isr,               \
+			    DEVICE_DT_INST_GET(inst), 0);                                          \
+		irq_enable(DT_INST_IRQ_BY_NAME(inst, rx, irq));                                    \
+		IRQ_CONNECT(DT_INST_IRQ_BY_NAME(inst, tx, irq),                                    \
+			    DT_INST_IRQ_BY_NAME(inst, tx, priority), can_n32_tx_isr,               \
+			    DEVICE_DT_INST_GET(inst), 0);                                          \
+		irq_enable(DT_INST_IRQ_BY_NAME(inst, tx, irq));                                    \
+		IRQ_CONNECT(DT_INST_IRQ_BY_NAME(inst, sce, irq),                                   \
+			    DT_INST_IRQ_BY_NAME(inst, sce, priority), can_n32_state_change_isr,    \
+			    DEVICE_DT_INST_GET(inst), 0);                                          \
+		irq_enable(DT_INST_IRQ_BY_NAME(inst, sce, irq));                                   \
+		can->INTE |= CAN_INTE_TMEIE | CAN_INTE_ERRIE | CAN_INTE_FMPIE0 | CAN_INTE_FMPIE1 | \
+			     CAN_INTE_BOFIE;                                                       \
+		if (IS_ENABLED(CONFIG_CAN_STATS)) {                                                \
+			can->INTE |= CAN_INTE_LECIE;                                               \
+		}                                                                                  \
 	}
 
-#define CAN_N32_CONFIG_INST(inst)							\
+#define CAN_N32_CONFIG_INST(inst)                                                                  \
 	COND_CODE_1(DT_INST_NODE_HAS_PROP(inst, pinctrl_0),				\
-		    (PINCTRL_DT_INST_DEFINE(inst);), ())				\
-	static const struct can_n32_config can_n32_cfg_##inst = {			\
-		.common = CAN_DT_DRIVER_CONFIG_INST_GET(inst, 0, 1000000),		\
-		.can = (CAN_Module *)DT_INST_REG_ADDR(inst),				\
-		.clk_cfg = DT_INST_CLOCKS_CELL(inst, bits),				\
-		.config_irq = config_can_##inst##_irq,					\
+		    (PINCTRL_DT_INST_DEFINE(inst);), ())                                   \
+	static const struct can_n32_config can_n32_cfg_##inst = {                                  \
+		.common = CAN_DT_DRIVER_CONFIG_INST_GET(inst, 0, 1000000),                         \
+		.can = (CAN_Module *)DT_INST_REG_ADDR(inst),                                       \
+		.clk_cfg = DT_INST_CLOCKS_CELL(inst, bits),                                        \
+		.config_irq = config_can_##inst##_irq,                                             \
 		.pcfg = COND_CODE_1(DT_INST_NODE_HAS_PROP(inst, pinctrl_0),		\
-				    (PINCTRL_DT_INST_DEV_CONFIG_GET(inst)), (NULL)),	\
-	};
+				    (PINCTRL_DT_INST_DEV_CONFIG_GET(inst)), (NULL)),                                \
+		};
 
-#define CAN_N32_DATA_INST(inst) \
-	static struct can_n32_data can_n32_dev_data_##inst;
+#define CAN_N32_DATA_INST(inst) static struct can_n32_data can_n32_dev_data_##inst;
 
-#define CAN_N32_DEFINE_INST(inst)							\
-	CAN_DEVICE_DT_INST_DEFINE(inst, can_n32_init, NULL,				\
-				  &can_n32_dev_data_##inst, &can_n32_cfg_##inst,	\
-				  POST_KERNEL, CONFIG_CAN_INIT_PRIORITY,		\
+#define CAN_N32_DEFINE_INST(inst)                                                                  \
+	CAN_DEVICE_DT_INST_DEFINE(inst, can_n32_init, NULL, &can_n32_dev_data_##inst,              \
+				  &can_n32_cfg_##inst, POST_KERNEL, CONFIG_CAN_INIT_PRIORITY,      \
 				  &can_api_funcs);
 
-#define CAN_N32_INST(inst)		\
-	CAN_N32_IRQ_INST(inst)		\
-	CAN_N32_CONFIG_INST(inst)	\
-	CAN_N32_DATA_INST(inst)		\
+#define CAN_N32_INST(inst)                                                                         \
+	CAN_N32_IRQ_INST(inst)                                                                     \
+	CAN_N32_CONFIG_INST(inst)                                                                  \
+	CAN_N32_DATA_INST(inst)                                                                    \
 	CAN_N32_DEFINE_INST(inst)
 
 DT_INST_FOREACH_STATUS_OKAY(CAN_N32_INST)

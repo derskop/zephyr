@@ -1,0 +1,16 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  drivers.can.n32_bxcan:
+    tags:
+      - drivers
+      - can
+    harness: ztest
+    depends_on:
+      - can
+    platform_allow:
+      - n32g45xml_stb
+    vendor_allow:
+      - nsing
+    timeout: 120
