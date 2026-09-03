@@ -106,4 +106,17 @@
 		pinmux = <N32G45X_PINMUX('C', 12, ALTERNATE, SPI3_REMAP1)>;
 		slew-rate = "50mhz";
 	};
+
+	/* TIM3 PWM, default mapping (TIM3_REMAP0):
+	 *   CH1 = PA6, CH2 = PA7, CH3 = PB0, CH4 = PB1.
+	 * PA6/PA7 are occupied by SPI1 (MISO/MOSI), so only the free
+	 * channels CH3 (PB0) and CH4 (PB1) are exposed for PWM output.
+	 * These are PWM channels 2 and 3 respectively. */
+	tim3_ch3_pb0: tim3_ch3_pb0 {
+		pinmux = <N32G45X_PINMUX('B', 0, ALTERNATE, TIM3_REMAP0)>;
+	};
+
+	tim3_ch4_pb1: tim3_ch4_pb1 {
+		pinmux = <N32G45X_PINMUX('B', 1, ALTERNATE, TIM3_REMAP0)>;
+	};
 };
