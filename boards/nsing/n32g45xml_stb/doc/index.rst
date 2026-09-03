@@ -75,6 +75,7 @@ Default Zephyr Peripheral Mapping
 - LED2: PB4
 - LED3: PB5
 - USB_DC DM/DP: PA11/PA12
+- PWM TIM3 CH3/CH4: PB0/PB1 (TIM3 CH1/CH2 are used by SPI1)
 
 System Clock
 ------------

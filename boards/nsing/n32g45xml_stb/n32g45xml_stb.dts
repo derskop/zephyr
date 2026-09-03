@@ -116,3 +116,17 @@
 	pinctrl-names = "default";
 	status = "okay";
 };
+
+/* PWM example: TIM3 CH3 (PB0) and CH4 (PB1).
+ * The timer clock is 72 MHz; prescaler 71 divides it by 72 to get a
+ * 1 MHz counter, so an application can request 1 kHz PWM with a period
+ * of 1000 cycles. Use pwm_set_cycles() with channel 2 (PB0) / 3 (PB1). */
+&tim3 {
+	prescaler = <71>;
+	status = "okay";
+	pwm3: pwm {
+		pinctrl-0 = <&tim3_ch3_pb0 &tim3_ch4_pb1>;
+		pinctrl-names = "default";
+		status = "okay";
+	};
+};
