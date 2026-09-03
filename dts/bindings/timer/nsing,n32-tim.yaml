@@ -14,3 +14,14 @@ properties:
     required: true
   interrupts:
     required: true
+  prescaler:
+    type: int
+    default: 0
+    description: Timer clock prescaler value (actual division is prescaler + 1).
+  channels:
+    type: int
+    required: true
+    description: Number of capture/compare channels implemented by the timer.
+  advanced:
+    type: boolean
+    description: Timer has the advanced-control main output enable bit.
