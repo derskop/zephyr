@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config OPAMP_N32
+	bool "Nations N32G45x OPAMP driver"
+	default y
+	depends on DT_HAS_NSING_N32_OPAMP_ENABLED
+	select PINCTRL
+	select USE_NSING_OPAMP
+	help
+	  Enable the operational amplifier (OPAMP) driver for the Nations
+	  N32G45x SoC.  Each of the 4 OPAMPs is a separate Zephyr opamp
+	  device.

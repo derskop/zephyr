@@ -1,0 +1,24 @@
+/*
+ * N32G45XML-STB overlay for the COMP / OPAMP driver test.
+ *
+ * comp1  : positive = PA1, negative = VREF1 (internal scaler), IRQ 82
+ * opamp1 : non-inverting internal PGA, input = PA1   -> set_gain is tested
+ * opamp4 : internal follower, input = PC3            -> MOD/VMSEL are checked
+ */
+&comp1 {
+	positive-input = "PA1";
+	negative-input = "VREF1";
+	status = "okay";
+};
+
+&opamp1 {
+	functional-mode = "non_inverting";
+	positive-input = "PA1";
+	status = "okay";
+};
+
+&opamp4 {
+	functional-mode = "follower";
+	positive-input = "PC3";
+	status = "okay";
+};
