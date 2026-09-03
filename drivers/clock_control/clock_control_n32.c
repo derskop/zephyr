@@ -21,6 +21,27 @@ struct n32_clock_control_config {
 	uint32_t base;
 };
 
+/*
+ * N32G45x follows the STM32 rule: when the APB prescaler is > 1 the timer
+ * clocks (TIMx) run at 2x the APB clock.  All other APB peripherals run at
+ * the raw PCLK rate.  Identify TIM clock IDs by their APB enable-register bit.
+ */
+static bool n32_is_timer_clock(uint32_t bits)
+{
+	uint32_t offset = GET_CLOCK_ID_OFFSET(bits);
+	uint32_t bit = GET_CLOCK_ID_BIT(bits);
+
+	if (offset == N32_APB1PCLKEN_OFFSET) {
+		/* TIM2..TIM7 occupy APB1 enable bits 0..5 */
+		return bit <= 5U;
+	}
+	if (offset == N32_APB2PCLKEN_OFFSET) {
+		/* TIM1 (bit 11) and TIM8 (bit 13) are on APB2 */
+		return (bit == 11U) || (bit == 13U);
+	}
+	return false;
+}
+
 static int n32_cc_on(const struct device *dev, clock_control_subsys_t sub_system)
 {
 	const struct n32_clock_control_config *config = dev->config;
@@ -50,19 +71,30 @@ static int n32_cc_get_rate(const struct device *dev,
 			   uint32_t *rate)
 {
 	uint32_t bits = *(uint32_t *)sub_system;
+	uint32_t offset = GET_CLOCK_ID_OFFSET(bits);
 	RCC_ClocksType rcc_clocks;
 
 	RCC_GetClocksFreqValue(&rcc_clocks);
 
-	switch (GET_CLOCK_ID_OFFSET(bits)) {
+	switch (offset) {
 	case N32_AHBPCLKEN_OFFSET:
 		*rate = rcc_clocks.HclkFreq;
 		break;
 	case N32_APB2PCLKEN_OFFSET:
 		*rate = rcc_clocks.Pclk2Freq;
+		if (n32_is_timer_clock(bits) &&
+		    (rcc_clocks.HclkFreq > rcc_clocks.Pclk2Freq)) {
+			/* APB2 prescaler > 1: timer clock is 2x PCLK2 */
+			*rate *= 2U;
+		}
 		break;
 	case N32_APB1PCLKEN_OFFSET:
 		*rate = rcc_clocks.Pclk1Freq;
+		if (n32_is_timer_clock(bits) &&
+		    (rcc_clocks.HclkFreq > rcc_clocks.Pclk1Freq)) {
+			/* APB1 prescaler > 1: timer clock is 2x PCLK1 */
+			*rate *= 2U;
+		}
 		break;
 	default:
 		return -EINVAL;

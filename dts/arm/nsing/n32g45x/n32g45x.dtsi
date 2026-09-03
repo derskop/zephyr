@@ -346,89 +346,89 @@
 
 		};
 
-		/* ---- 定时器（需补 binding nsing,n32-tim） ---- */
-
-/*
+		/* TIM1 and TIM8 are advanced timers; TIM2-TIM5 are general-purpose. */
 		tim1: tim@40012c00 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40012c00 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM1>;
 			interrupts = <25 0>, <24 0>, <26 0>, <27 0>;
 			interrupt-names = "up", "brk", "trg_com", "cc";
+			prescaler = <0>;
+			channels = <4>;
+			advanced;
 			status = "disabled";
+			pwm1: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
-
-/*
 		tim2: tim@40000000 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40000000 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM2>;
 			interrupts = <28 0>;
+			prescaler = <0>;
+			channels = <4>;
 			status = "disabled";
+			pwm2: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
-
-/*
 		tim3: tim@40000400 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40000400 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM3>;
 			interrupts = <29 0>;
+			prescaler = <0>;
+			channels = <4>;
 			status = "disabled";
+			pwm3: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
-
-/*
 		tim4: tim@40000800 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40000800 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM4>;
 			interrupts = <30 0>;
+			prescaler = <0>;
+			channels = <4>;
 			status = "disabled";
+			pwm4: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
-
-/*
 		tim5: tim@40000c00 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40000c00 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM5>;
 			interrupts = <50 0>;
+			prescaler = <0>;
+			channels = <4>;
 			status = "disabled";
+			pwm5: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
-
-/*
 		tim6: tim@40001000 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40001000 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM6>;
 			interrupts = <54 0>;
+			prescaler = <0>;
+			channels = <0>;
 			status = "disabled";
 		};
-*/
-
-/*
 		tim7: tim@40001400 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40001400 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM7>;
 			interrupts = <55 0>;
+			prescaler = <0>;
+			channels = <0>;
 			status = "disabled";
 		};
-*/
-
-/*
 		tim8: tim@40013400 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40013400 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM8>;
 			interrupts = <44 0>, <43 0>, <45 0>, <46 0>;
 			interrupt-names = "up", "brk", "trg_com", "cc";
+			prescaler = <0>;
+			channels = <4>;
+			advanced;
 			status = "disabled";
+			pwm8: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
 
 		/* ---- DMA（需补 binding nsing,n32-dma） ---- */
 
