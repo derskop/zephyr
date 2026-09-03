@@ -1,0 +1,141 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Nations Technologies N32G45x comparator (COMP)
+
+  The N32G45x integrates 7 independent comparators (COMP1..COMP7) sharing
+  one APB1 peripheral block.  Each comparator is exposed as its own
+  Zephyr comparator device, identified by its own devicetree node whose
+  "reg" points at the COMPx_CTRL register block
+  (0x40002410 + (x-1)*0x10).
+
+  e.g.:
+
+    comp1: comparator@40002410 {
+      compatible = "nsing,n32-comp";
+      reg = <0x40002410 0x10>;
+      clocks = <&rcc N32_CLOCK_COMP>;
+      positive-input = "PA1";
+      negative-input = "VREF1";
+      hysteresis = "NONE";
+      status = "okay";
+    };
+
+  The comparator interrupt lines are shared: COMP1/2/3 -> IRQ 82,
+  COMP4/5/6 -> IRQ 83, COMP7 -> IRQ 84.  Only one comparator of a group
+  can therefore use trigger callbacks at a time.  The SoC dtsi wires
+  the "interrupts" property on the first comparator of each group
+  (comp1, comp4, comp7); move it to another comparator of the group if
+  needed, keeping a single interrupt-capable comparator per group.
+
+  NOTE: positive-input/negative-input values are instance specific.
+  When a value is not routable to the selected comparator instance the
+  driver fails initialization with -EINVAL.
+
+include:
+  - base.yaml
+  - pinctrl-device.yaml
+
+compatible: "nsing,n32-comp"
+
+properties:
+  reg:
+    required: true
+  clocks:
+    required: true
+  interrupts:
+    required: false
+
+  positive-input:
+    type: string
+    description: |
+      Selects the non-inverting (+) input source of this comparator.
+      May be an external pad (the pad must additionally be configured
+      analog via pinctrl on the board) or, for some instances, a DAC
+      output.  See the driver lookup table for reachability.
+    enum:
+      - PA1
+      - PB10
+      - PB11
+      - PA7
+      - PB14
+      - PB0
+      - PC9
+      - PB15
+      - PC4
+      - PC3
+      - PA3
+      - PC5
+      - PD9
+      - PC1
+
+  negative-input:
+    type: string
+    description: |
+      Selects the inverting (-) input source of this comparator.  May be
+      an external pad, a DAC channel, or one of the two internal
+      reference scalers VREF1/VREF2 (enable/trim controlled by
+      n32,vref1-trim / n32,vref2-trim).
+    enum:
+      - PA0
+      - PB1
+      - PB12
+      - PC4
+      - PB10
+      - PA7
+      - PC0
+      - PE8
+      - PE7
+      - PB13
+      - PD10
+      - PD8
+      - DAC1
+      - DAC2
+      - VREF1
+      - VREF2
+
+  hysteresis:
+    type: string
+    description: |
+      Selects the hysteresis level.  Hysteresis offsets the comparison
+      threshold to avoid output toggling on noisy / slowly varying
+      inputs.
+    enum:
+      - NONE
+      - LOW
+      - MEDIUM
+      - HIGH
+    default: NONE
+
+  invert-output:
+    type: string
+    description: |
+      Output polarity selection (COMPx_CTRL.POL).  When INVERTED the
+      comparator output is inverted.
+    enum:
+      - NONINVERTED
+      - INVERTED
+    default: NONINVERTED
+
+  lock-enable:
+    type: boolean
+    description: |
+      Lock this comparator configuration (COMP_LOCK).  Once locked the
+      comparator registers become read-only until the next system reset.
+
+  n32,vref1-trim:
+    type: int
+    default: 0
+    description: |
+      6-bit trim value (0..63) of the VREF1 scaler.  Only used when
+      negative-input selects VREF1.  The scaler output voltage follows
+      the trim value; consult UM_N32G45x_COMP for the exact scaling.
+      The trim of both scalers is shared between all comparators.
+
+  n32,vref2-trim:
+    type: int
+    default: 0
+    description: |
+      6-bit trim value (0..63) of the VREF2 scaler.  Only used when
+      negative-input selects VREF2.

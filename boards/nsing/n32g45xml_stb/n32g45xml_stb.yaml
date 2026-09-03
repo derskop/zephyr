@@ -9,8 +9,10 @@ toolchain:
 ram: 144
 flash: 512
 supported:
+  - comparator
   - gpio
   - i2c
+  - opamp
   - spi
   - uart
 vendor: nsing

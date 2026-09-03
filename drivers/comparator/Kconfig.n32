@@ -1,0 +1,12 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config COMPARATOR_N32
+	bool "Nations N32G45x comparator driver"
+	default y
+	depends on DT_HAS_NSING_N32_COMP_ENABLED
+	select PINCTRL
+	select USE_NSING_COMP
+	help
+	  Enable the comparator (COMP) driver for the Nations N32G45x SoC.
+	  Each of the 7 comparators is a separate Zephyr comparator device.
