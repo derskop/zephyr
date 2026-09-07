@@ -55,6 +55,9 @@ BUILD_ASSERT(DT_INST_CLOCKS_HAS_IDX(0, 0) && DT_INST_CLOCKS_HAS_IDX(0, 1),
 /* RTCSEL[1:0] in RCC->BDCTRL */
 #define RTC_N32_BDCTRL_RTCSEL_MASK	0x00000300U
 
+/* Poll bound for the init-mode and shadow-sync flag waits (INITF/RSYF). */
+#define RTC_N32_INITM_TIMEOUT		100000U
+
 /*
  * The prescalers are computed from the frequency of the declared clock
  * source, never hard coded: the frequency is read from the same DT
@@ -376,16 +379,6 @@ static int rtc_n32_derive_prescalers(uint32_t freq, uint16_t *diva, uint16_t *di
  */
 static int rtc_n32_seed_calendar(struct rtc_n32_data *data)
 {
-	RTC_InitType init = {
-		.RTC_HourFormat = RTC_24HOUR_FORMAT,
-	};
-	RTC_DateType date = {
-		.WeekDay = RTC_WEEKDAY_MONDAY,
-		.Month = RTC_MONTH_JANUARY,
-		.Date = 1,
-		.Year = 0,
-	};
-	RTC_TimeType time = { 0 };
 	uint16_t diva;
 	uint16_t divs;
 	int ret;
@@ -398,19 +391,42 @@ static int rtc_n32_seed_calendar(struct rtc_n32_data *data)
 		return ret;
 	}
 
-	init.RTC_AsynchPrediv = diva;
-	init.RTC_SynchPrediv = divs;
+	/*
+	 * A cold seed must program the prescaler, time and date inside a
+	 * single init-mode session. Splitting it across the vendor RTC_Init,
+	 * RTC_SetDate and RTC_ConfigTime calls (three init-mode entries, each
+	 * of which shuts the calendar down and restarts it) leaves the alarm
+	 * compare engine dead on this part: ALAF/ALBF never latch on a
+	 * freshly seeded domain even though the register file ends up byte
+	 * identical to a live one. Writing PRE, TSH and DATE together before
+	 * exiting init mode (as the user manual's init sequence describes)
+	 * keeps the comparators alive across a cold-seeded boot.
+	 */
+	RTC->WRP = 0xCA;
+	RTC->WRP = 0x53;
 
-	if (RTC_Init(&init) == ERROR) {
-		LOG_ERR("RTC_Init failed");
+	RTC->INITSTS |= RTC_INITSTS_INITM;
+	for (uint32_t timeout = 0; (RTC->INITSTS & RTC_INITSTS_INITF) == 0U
+	     && timeout < RTC_N32_INITM_TIMEOUT; timeout++) {
+	}
+	if ((RTC->INITSTS & RTC_INITSTS_INITF) == 0U) {
+		RTC->WRP = 0xFF;
+		LOG_ERR("RTC failed to enter init mode (INITF timeout)");
 		return -EIO;
 	}
-	if (RTC_SetDate(RTC_FORMAT_BIN, &date) == ERROR) {
-		LOG_ERR("RTC_SetDate failed");
-		return -EIO;
-	}
-	if (RTC_ConfigTime(RTC_FORMAT_BIN, &time) == ERROR) {
-		LOG_ERR("RTC_ConfigTime failed");
+
+	RTC->PRE = ((uint32_t)diva << 16) | divs;
+	RTC->TSH = 0x00000000UL; /* 00:00:00, 24 h format */
+	RTC->DATE = 0x00002101UL; /* 2000-01-01, Monday */
+
+	RTC->INITSTS &= ~RTC_INITSTS_INITM;
+	RTC->WRP = 0xFF;
+
+	/* Calendar restarted at the seeded value: wait for the shadow
+	 * registers to resynchronize before they are read.
+	 */
+	if (RTC_WaitForSynchro() == ERROR) {
+		LOG_ERR("RTC shadow sync timeout after seeding");
 		return -EIO;
 	}
 
