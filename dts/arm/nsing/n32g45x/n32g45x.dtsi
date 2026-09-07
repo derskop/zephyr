@@ -461,17 +461,18 @@
 		};
 */
 
-		/* ---- 其它外设（均需补 binding） ---- */
-
-/*
 		rtc: rtc@40002800 {
-			compatible = "nsing,n32-rtc";	
+			compatible = "nsing,n32-rtc";
 			reg = <0x40002800 0x400>;
-			interrupts = <3 0>;
-			
+			interrupts = <41 0>;
+			/* Backup-domain access gates: BKP + PWR on APB1. */
+			clocks = <&rcc N32_CLOCK_BKP>, <&rcc N32_CLOCK_PWR>;
+			alarms-count = <2>;
+			alrm-exti-line = <17>;
 			status = "disabled";
 		};
-*/
+
+	/* ---- 其它外设（均需补 binding） ---- */
 
 		sdio: sdio@40018000 {
 			compatible = "nsing,n32-sdio";
