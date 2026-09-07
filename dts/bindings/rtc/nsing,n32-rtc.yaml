@@ -5,10 +5,44 @@ description: Nations Technologies N32 real-time clock
 
 compatible: "nsing,n32-rtc"
 
-include: [base.yaml]
+include:
+  - rtc.yaml
+  - rtc-device.yaml
 
 properties:
   reg:
     required: true
-  interrupts:
-    required: true
+
+  alrm-exti-line:
+    type: int
+    description: |
+      Number of the EXTI line the RTC alarm event is routed on (declared in
+      the SoC dtsi like st,stm32-rtc). N32G45x routes the alarm through EXTI
+      line 17 to the RTCAlarm IRQ (NVIC 41, same layout as stm32f4); the
+      driver enables the line (EXTI->IMASK / RT_CFG) from this property.
+    min: 0
+    max: 31
+
+  alarms-count:
+    description: |
+      Number of alarms exposed to the application. The N32 RTC has two
+      hardware alarm comparators (A and B); the SoC dtsi declares 2, and a
+      board may reduce this to 1 to expose only alarm A (alarm B calls then
+      fail with -EINVAL).
+
+  nsing,rtc-clock-source:
+    type: string
+    enum:
+      - lse
+      - lsi
+      - hse-div128
+    description: |
+      Clock source of the RTC, declared at the board level to match the
+      hardware actually present (customer boards may not carry a 32.768 kHz
+      crystal, in which case the RTC must run from the internal LSI or from
+      HSE/128). The selection is latched in RCC->BDCTRL.RTCSEL and can only
+      be changed by a backup-domain reset, so the declared source must match
+      the hardware. The driver derives the RTC prescalers from this
+      property; for hse-div128 the HSE frequency is read from the clk_hse
+      fixed-clock node. Not declared in the SoC dtsi: it is enforced at
+      compile time by the driver when the node is enabled.
