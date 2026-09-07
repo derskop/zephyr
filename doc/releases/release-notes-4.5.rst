@@ -1738,6 +1738,10 @@ New Drivers
   * :dtcompatible:`realtek,ameba-sdhost` (:github:`106687`)
   * :dtcompatible:`ti,am654-sdhci` (:github:`97172`)
 
+* RTC
+
+  * Nations Technologies N32 RTC (:dtcompatible:`nsing,n32-rtc`).
+
 * Sensors
 
   * :dtcompatible:`adi,adis1647x` (:github:`110012`)
