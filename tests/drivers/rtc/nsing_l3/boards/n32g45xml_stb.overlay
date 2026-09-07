@@ -1,0 +1,17 @@
+/*
+ * Copyright (c) 2026 Nations Technologies Inc.
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
+ * L3 RTC test clock source declaration for the n32g45xml_stb board.
+ *
+ * The board carries a 32.768 kHz crystal, so LSE is used. Boards without
+ * one must declare lsi (or hse-div128) instead - the source is latched
+ * in BDCTRL.RTCSEL at first use and only a backup-domain reset can
+ * change it.
+ */
+&rtc {
+	status = "okay";
+	nsing,rtc-clock-source = "lse";
+};

@@ -1,0 +1,6 @@
+# Copyright (c) 2026 Nations Technologies Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+mainmenu "RTC N32G45x L3 Functional Test"
+
+source "Kconfig.zephyr"
