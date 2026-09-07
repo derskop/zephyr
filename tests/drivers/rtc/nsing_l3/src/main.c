@@ -1,7 +1,7 @@
 /*
  * L3 functional RTC tests for the Nations N32G45X port (n32g45xml_stb).
  *
- * Exercises the full stm32-parity feature surface of the nsing,n32-rtc
+ * Exercises the full feature surface of the nsing,n32-rtc
  * driver on the real board:
  *  1. set/get_time round trip (the calendar is re-seeded from the same
  *     fixed value at suite start, so test logs are deterministic)
@@ -266,7 +266,7 @@ ZTEST(rtc_nsing_l3, test_set_get_roundtrip)
  *
  * SECOND|MINUTE|HOUR|MONTHDAY|WEEKDAY (0x004f): there is no month or
  * year compare hardware, and the day field is a weekday/day-of-month
- * selector (bit30 semantics differ from stm32).
+ * selector (bit30 selects weekday vs day-of-month compare).
  */
 ZTEST(rtc_nsing_l3, test_supported_fields)
 {
