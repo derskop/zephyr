@@ -1,0 +1,14 @@
+# Copyright (c) 2026 Nations Technologies Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+config RTC_N32
+	bool "N32 RTC driver"
+	default y
+	depends on DT_HAS_NSING_N32_RTC_ENABLED
+	select USE_NSING_RTC
+	help
+	  Build the RTC driver for Nations Technologies N32 SoCs.
+
+	  The RTC clock source (lse/lsi/hse-div128) is a board level
+	  decision declared through the nsing,rtc-clock-source devicetree
+	  property, since the board may not carry a 32.768 kHz crystal.
