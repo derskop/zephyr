@@ -44,7 +44,7 @@ BUILD_ASSERT(DT_NODE_HAS_PROP(DT_DRV_INST(0), nsing_rtc_clock_source),
 	     "rtc node enabled without nsing,rtc-clock-source: declare the board "
 	     "clock source (lse/lsi/hse-div128) in the board devicetree");
 
-/* The node declares the clocks it needs (stm32 parity) so the driver holds
+/* The node declares the clocks it needs so the driver holds
  * no hard coded clock id: the APB1 gates for backup-domain access, BKP and
  * PWR.
  */
@@ -107,14 +107,14 @@ BUILD_ASSERT((RTC_N32_CLK_SRC_IDX != RTC_N32_CLK_SRC_HSE_DIV128) ||
 #define RTC_N32_ALRM_A 0U
 #define RTC_N32_ALRM_B 1U
 
-/* Zephyr alarm time fields supported by the hardware (stm32 parity). */
+/* Zephyr alarm time fields supported by the hardware. */
 #define RTC_N32_SUPPORTED_ALARM_FIELDS                                                             \
 	(RTC_ALARM_TIME_MASK_SECOND | RTC_ALARM_TIME_MASK_MINUTE | RTC_ALARM_TIME_MASK_HOUR |      \
 	 RTC_ALARM_TIME_MASK_WEEKDAY | RTC_ALARM_TIME_MASK_MONTHDAY)
 
 /* The RTC alarm event is routed to the NVIC through the EXTI line declared
- * as alrm-exti-line (17 on N32G45x, same as stm32f4): the line is a DT
- * property, not a hard coded literal.
+ * as alrm-exti-line (17 on N32G45x): the line is a DT property, not a hard
+ * coded literal.
  */
 #define RTC_N32_EXTI_ALARM_LINE DT_INST_PROP(0, alrm_exti_line)
 /* EXTI->IMASK / RT_CFG / PEND are plain per-line bit maps. */
@@ -127,8 +127,8 @@ BUILD_ASSERT((RTC_N32_CLK_SRC_IDX != RTC_N32_CLK_SRC_HSE_DIV128) ||
  * Smooth calibration: the CALIB register (bit 15 CP, bits 8:0 CM[8:0]) adds
  * or removes (512 * CP) - CM[8:0] RTCCLK pulses per calibration window, the
  * default window being 2^20 RTCCLK cycles (~32 s at 32768 Hz). Values are
- * exchanged with the user in ppb, through the same frequency-independent math
- * as the stm32 driver:
+ * exchanged with the user in ppb, through a fixed frequency-independent
+ * scaling:
  *
  * nb_pulses = ppb * 2^20 / 10^9 = ppb * 2^11 / 5^9 = ppb * 2048 / 1953125
  */
@@ -178,7 +178,7 @@ static bool rtc_n32_osc_ready(uint8_t rdy_flag)
  * with the system clock driver at PRE_KERNEL_2, so the cycle counter is
  * still frozen while we run and k_busy_wait() would never return (seen as
  * a cold-boot hang in the LSE start-up wait, where the oscillator is not
- * ready yet). stm32 documents the same constraint and burns raw cycles.
+ * ready yet). Raw cycle polling is required in this window.
  *
  * Each loop iteration is one RCC_GetFlagStatus() call of about
  * RTC_N32_OSC_POLL_COST_CYCLES core cycles; the iteration budget below is
@@ -214,10 +214,9 @@ static int rtc_n32_wait_flag(uint8_t flag, uint32_t timeout_us)
 static int rtc_n32_clock_init(void)
 {
 	/*
-	 * Enable the APB1 gates the node declares (stm32 parity): N32 needs
-	 * both the BKP and the PWR clock for backup-domain access -- stm32f4
-	 * gates only PWR (it has no BKPEN), which is why its node carries a
-	 * single clocks cell.
+	 * Enable the APB1 gates the node declares: N32 needs both the BKP
+	 * and the PWR clock for backup-domain access, so the node carries
+	 * two clocks cells.
 	 */
 	const struct device *rcc = DEVICE_DT_GET(DT_INST_CLOCKS_CTLR_BY_IDX(0, 0));
 	uint32_t clkids[2] = {
@@ -910,7 +909,7 @@ static int rtc_n32_set_calibration(const struct device *dev, int32_t calibration
 {
 	ARG_UNUSED(dev);
 
-	/* ppb applied on the clock period with an opposite sign (stm32 parity). */
+	/* ppb applied on the clock period with an opposite sign. */
 	if ((calibration > RTC_N32_CALIB_MAX_PPB) || (calibration < RTC_N32_CALIB_MIN_PPB)) {
 		LOG_ERR("calibration %d out of supported range [%d, %d]", calibration,
 			RTC_N32_CALIB_MIN_PPB, RTC_N32_CALIB_MAX_PPB);
@@ -937,8 +936,8 @@ static int rtc_n32_set_calibration(const struct device *dev, int32_t calibration
 	 * A smooth calibration is applied over a whole window (the default
 	 * 2^20 RTCCLK cycles: 32 s at 32.768 kHz) and the RECPF flag stays set
 	 * for its entire duration. A write issued while the previous window is
-	 * still running is dropped by the hardware, so wait the flag out first
-	 * - the stm32 driver waits the same way. 100 s bounds any window a
+	 * still running is dropped by the hardware, so wait the flag out
+	 * first. 100 s bounds any window a
 	 * previous boot may have left pending (2^20 cycles at the slowest
 	 * declared RTC clock, ~32 s, with margin).
 	 */

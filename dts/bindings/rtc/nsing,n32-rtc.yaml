@@ -17,9 +17,9 @@ properties:
     type: int
     description: |
       Number of the EXTI line the RTC alarm event is routed on (declared in
-      the SoC dtsi like st,stm32-rtc). N32G45x routes the alarm through EXTI
-      line 17 to the RTCAlarm IRQ (NVIC 41, same layout as stm32f4); the
-      driver enables the line (EXTI->IMASK / RT_CFG) from this property.
+      the SoC dtsi). N32G45x routes the alarm through EXTI line 17 to the
+      RTCAlarm IRQ (NVIC 41); the driver enables the line (EXTI->IMASK /
+      RT_CFG) from this property.
     min: 0
     max: 31
 
