@@ -1,0 +1,14 @@
+# Copyright (c) 2026 Nations Technologies Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  drivers.rtc.nsing_l3:
+    tags:
+      - drivers
+      - rtc
+    platform_allow: n32g45xml_stb
+    vendor_allow:
+      - nsing
+    # The alarm cases watch the pending flag up to 25 s past arming, so
+    # a failing board can exceed the 60 s twister default.
+    timeout: 120
