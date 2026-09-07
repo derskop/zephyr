@@ -47,9 +47,8 @@
  */
 #define RTC_ALARMS_COUNT DT_PROP_OR(DT_NODELABEL(rtc), alarms_count, 0)
 
-#define ALARM_TIME_MASK_HMS	(RTC_ALARM_TIME_MASK_SECOND |	\
-				 RTC_ALARM_TIME_MASK_MINUTE |	\
-				 RTC_ALARM_TIME_MASK_HOUR)
+#define ALARM_TIME_MASK_HMS                                                                        \
+	(RTC_ALARM_TIME_MASK_SECOND | RTC_ALARM_TIME_MASK_MINUTE | RTC_ALARM_TIME_MASK_HOUR)
 
 static const struct device *rtc_dev;
 
@@ -64,23 +63,22 @@ static int user_b = 0xBB;
 
 static void print_rtc_time(const char *tag, const struct rtc_time *t)
 {
-	printk("%s: %04u-%02u-%02u (wday=%d) %02u:%02u:%02u.%09u\n",
-	       tag, t->tm_year + 1900, t->tm_mon + 1, t->tm_mday, t->tm_wday,
-	       t->tm_hour, t->tm_min, t->tm_sec, t->tm_nsec);
+	printk("%s: %04u-%02u-%02u (wday=%d) %02u:%02u:%02u.%09u\n", tag, t->tm_year + 1900,
+	       t->tm_mon + 1, t->tm_mday, t->tm_wday, t->tm_hour, t->tm_min, t->tm_sec, t->tm_nsec);
 }
 
 static void alarm_a_cb(const struct device *dev, uint16_t id, void *user_data)
 {
 	alarm_a_hits++;
-	printk("alarm A callback: id=%u user_data=%d (hits=%d)\n",
-	       id, *(int *)user_data, alarm_a_hits);
+	printk("alarm A callback: id=%u user_data=%d (hits=%d)\n", id, *(int *)user_data,
+	       alarm_a_hits);
 }
 
 static void alarm_b_cb(const struct device *dev, uint16_t id, void *user_data)
 {
 	alarm_b_hits++;
-	printk("alarm B callback: id=%u user_data=%d (hits=%d)\n",
-	       id, *(int *)user_data, alarm_b_hits);
+	printk("alarm B callback: id=%u user_data=%d (hits=%d)\n", id, *(int *)user_data,
+	       alarm_b_hits);
 }
 
 /*
@@ -93,7 +91,7 @@ static void alarm_b_cb(const struct device *dev, uint16_t id, void *user_data)
  */
 static void *rtc_nsing_l3_setup(void)
 {
-	struct rtc_time boot_t = { 0 };
+	struct rtc_time boot_t = {0};
 	struct rtc_time seed = {
 		.tm_sec = 56,
 		.tm_min = 34,
@@ -112,7 +110,8 @@ static void *rtc_nsing_l3_setup(void)
 	ret = rtc_get_time(rtc_dev, &boot_t);
 	if (ret < 0) {
 		printk("PROBE: pre-set get_time failed: %d (-ENODATA = cleared"
-		       " domain, driver cold-seeded)\n", ret);
+		       " domain, driver cold-seeded)\n",
+		       ret);
 	} else {
 		print_rtc_time("PROBE boot domain time", &boot_t);
 		printk("PROBE verdict: %s (2000 timestamp = cleared domain,"
@@ -150,7 +149,7 @@ static void time_add_seconds(struct rtc_time *t, int offset_s)
  */
 static int wait_for_alarm(uint16_t id, int timeout_ms)
 {
-	struct rtc_time t = { 0 };
+	struct rtc_time t = {0};
 	int waited = 0;
 	int last_sec = -1;
 
@@ -167,8 +166,7 @@ static int wait_for_alarm(uint16_t id, int timeout_ms)
 
 		if (rtc_get_time(rtc_dev, &t) == 0 && t.tm_sec != last_sec) {
 			last_sec = t.tm_sec;
-			printk("   cal %02u:%02u:%02u\n", t.tm_hour, t.tm_min,
-			       t.tm_sec);
+			printk("   cal %02u:%02u:%02u\n", t.tm_hour, t.tm_min, t.tm_sec);
 		}
 
 		k_sleep(K_MSEC(100));
@@ -184,24 +182,22 @@ static int wait_for_alarm(uint16_t id, int timeout_ms)
  * matches the programmed value, then disarm so no stale compare is left
  * armed for the next test.
  */
-static void run_alarm_case(uint16_t id, int offset_s, volatile int *hits,
-			   rtc_alarm_callback cb, int *user_val)
+static void run_alarm_case(uint16_t id, int offset_s, volatile int *hits, rtc_alarm_callback cb,
+			   int *user_val)
 {
 	struct rtc_time target;
-	struct rtc_time readback = { 0 };
+	struct rtc_time readback = {0};
 	uint16_t mask;
 	int fired;
 
-	zassert_ok(rtc_get_time(rtc_dev, &target),
-		   "alarm %u: rtc_get_time failed", id);
+	zassert_ok(rtc_get_time(rtc_dev, &target), "alarm %u: rtc_get_time failed", id);
 	time_add_seconds(&target, offset_s);
-	printk("arming alarm %u at %02u:%02u:%02u (+%d s)\n", id,
-	       target.tm_hour, target.tm_min, target.tm_sec, offset_s);
+	printk("arming alarm %u at %02u:%02u:%02u (+%d s)\n", id, target.tm_hour, target.tm_min,
+	       target.tm_sec, offset_s);
 
 	zassert_ok(rtc_alarm_set_callback(rtc_dev, id, cb, user_val),
 		   "alarm %u: set_callback failed", id);
-	zassert_ok(rtc_alarm_set_time(rtc_dev, id, ALARM_TIME_MASK_HMS,
-				      &target),
+	zassert_ok(rtc_alarm_set_time(rtc_dev, id, ALARM_TIME_MASK_HMS, &target),
 		   "alarm %u: set_time failed", id);
 
 	fired = wait_for_alarm(id, (offset_s + 10) * 1000);
@@ -212,30 +208,23 @@ static void run_alarm_case(uint16_t id, int offset_s, volatile int *hits,
 			   "alarm %u: clear callback failed", id);
 		zassert_true(false, "alarm %u is_pending error", id);
 	}
-	zassert_true(fired == 1, "alarm %u did not fire within %d s", id,
-		     offset_s + 10);
+	zassert_true(fired == 1, "alarm %u did not fire within %d s", id, offset_s + 10);
 
-	zassert_ok(rtc_alarm_get_time(rtc_dev, id, &mask, &readback),
-		   "alarm %u: get_time failed", id);
+	zassert_ok(rtc_alarm_get_time(rtc_dev, id, &mask, &readback), "alarm %u: get_time failed",
+		   id);
 	printk("alarm %u readback: %02u:%02u:%02u mask=0x%04x"
 	       " (expect 0x%04x)\n",
-	       id, readback.tm_hour, readback.tm_min, readback.tm_sec,
-	       (uint32_t)mask, (uint32_t)ALARM_TIME_MASK_HMS);
-	zassert_equal(mask, ALARM_TIME_MASK_HMS,
-		      "alarm %u readback mask mismatch", id);
-	zassert_equal(readback.tm_hour, target.tm_hour,
-		      "alarm %u readback hour mismatch", id);
-	zassert_equal(readback.tm_min, target.tm_min,
-		      "alarm %u readback minute mismatch", id);
-	zassert_equal(readback.tm_sec, target.tm_sec,
-		      "alarm %u readback second mismatch", id);
+	       id, readback.tm_hour, readback.tm_min, readback.tm_sec, (uint32_t)mask,
+	       (uint32_t)ALARM_TIME_MASK_HMS);
+	zassert_equal(mask, ALARM_TIME_MASK_HMS, "alarm %u readback mask mismatch", id);
+	zassert_equal(readback.tm_hour, target.tm_hour, "alarm %u readback hour mismatch", id);
+	zassert_equal(readback.tm_min, target.tm_min, "alarm %u readback minute mismatch", id);
+	zassert_equal(readback.tm_sec, target.tm_sec, "alarm %u readback second mismatch", id);
 
-	zassert_equal(*hits, 1, "alarm %u callback ran %d times (expect 1)",
-		      id, *hits);
+	zassert_equal(*hits, 1, "alarm %u callback ran %d times (expect 1)", id, *hits);
 
 	/* Leave no armed comparator behind for the next test. */
-	zassert_ok(rtc_alarm_set_time(rtc_dev, id, 0, NULL),
-		   "alarm %u: disarm failed", id);
+	zassert_ok(rtc_alarm_set_time(rtc_dev, id, 0, NULL), "alarm %u: disarm failed", id);
 	zassert_ok(rtc_alarm_set_callback(rtc_dev, id, NULL, NULL),
 		   "alarm %u: clear callback failed", id);
 }
@@ -258,7 +247,7 @@ ZTEST(rtc_nsing_l3, test_set_get_roundtrip)
 		.tm_year = 126, /* 2026 */
 		.tm_wday = 1,   /* Monday */
 	};
-	struct rtc_time rd = { 0 };
+	struct rtc_time rd = {0};
 
 	zassert_ok(rtc_set_time(rtc_dev, &t), "rtc_set_time failed");
 	zassert_ok(rtc_get_time(rtc_dev, &rd), "rtc_get_time failed");
@@ -291,8 +280,9 @@ ZTEST(rtc_nsing_l3, test_supported_fields)
 	zassert_ok(rtc_alarm_get_supported_fields(rtc_dev, 0, &mask),
 		   "get_supported_fields failed");
 	printk("supported alarm fields mask: 0x%04x (expect 0x004f)\n", mask);
-	zassert_equal(mask, ALARM_TIME_MASK_HMS | RTC_ALARM_TIME_MASK_MONTHDAY |
-			    RTC_ALARM_TIME_MASK_WEEKDAY,
+	zassert_equal(mask,
+		      ALARM_TIME_MASK_HMS | RTC_ALARM_TIME_MASK_MONTHDAY |
+			      RTC_ALARM_TIME_MASK_WEEKDAY,
 		      "supported field mask mismatch");
 }
 
@@ -350,24 +340,21 @@ ZTEST(rtc_nsing_l3, test_alarm_disable)
 
 	zassert_ok(rtc_get_time(rtc_dev, &target), "rtc_get_time failed");
 	time_add_seconds(&target, 6);
-	printk("arming alarm B at %02u:%02u:%02u, then disabling it\n",
-	       target.tm_hour, target.tm_min, target.tm_sec);
+	printk("arming alarm B at %02u:%02u:%02u, then disabling it\n", target.tm_hour,
+	       target.tm_min, target.tm_sec);
 
 	hits_before = alarm_b_hits;
 	zassert_ok(rtc_alarm_set_callback(rtc_dev, 1, alarm_b_cb, &user_b),
 		   "alarm B: set_callback failed");
-	zassert_ok(rtc_alarm_set_time(rtc_dev, 1, ALARM_TIME_MASK_HMS,
-				      &target),
+	zassert_ok(rtc_alarm_set_time(rtc_dev, 1, ALARM_TIME_MASK_HMS, &target),
 		   "alarm B: set_time failed");
-	zassert_ok(rtc_alarm_set_time(rtc_dev, 1, 0, NULL),
-		   "alarm B: disable failed");
+	zassert_ok(rtc_alarm_set_time(rtc_dev, 1, 0, NULL), "alarm B: disable failed");
 
 	/* Watch through the target second plus margin for a late latch. */
 	for (int i = 0; i < 14; i++) {
 		int pending = rtc_alarm_is_pending(rtc_dev, 1);
 
-		zassert_true(pending >= 0, "alarm B is_pending failed: %d",
-			     pending);
+		zassert_true(pending >= 0, "alarm B is_pending failed: %d", pending);
 		if (pending == 1) {
 			stale = 1;
 			break;
@@ -376,8 +363,7 @@ ZTEST(rtc_nsing_l3, test_alarm_disable)
 	}
 
 	zassert_equal(stale, 0, "stale pending flag after disable");
-	zassert_equal(alarm_b_hits, hits_before,
-		      "alarm B callback ran after disable");
+	zassert_equal(alarm_b_hits, hits_before, "alarm B callback ran after disable");
 
 	zassert_ok(rtc_alarm_set_callback(rtc_dev, 1, NULL, NULL),
 		   "alarm B: clear callback failed");
@@ -395,35 +381,24 @@ ZTEST(rtc_nsing_l3, test_calibration_roundtrip)
 {
 	int32_t calib;
 
-	zassert_ok(rtc_set_calibration(rtc_dev, 0),
-		   "set_calibration(0) failed");
-	zassert_ok(rtc_get_calibration(rtc_dev, &calib),
-		   "get_calibration failed");
+	zassert_ok(rtc_set_calibration(rtc_dev, 0), "set_calibration(0) failed");
+	zassert_ok(rtc_get_calibration(rtc_dev, &calib), "get_calibration failed");
 	printk("calibration: reset -> %d ppb\n", calib);
 
-	zassert_ok(rtc_set_calibration(rtc_dev, 100000),
-		   "set_calibration(+100000) failed");
-	zassert_ok(rtc_get_calibration(rtc_dev, &calib),
-		   "get_calibration failed");
+	zassert_ok(rtc_set_calibration(rtc_dev, 100000), "set_calibration(+100000) failed");
+	zassert_ok(rtc_get_calibration(rtc_dev, &calib), "get_calibration failed");
 	printk("calibration: +100000 ppb -> %d ppb (quantized)\n", calib);
-	zassert_true(calib > 99500 && calib < 100500,
-		     "+100000 ppb read back as %d", calib);
+	zassert_true(calib > 99500 && calib < 100500, "+100000 ppb read back as %d", calib);
 
-	zassert_ok(rtc_set_calibration(rtc_dev, -100000),
-		   "set_calibration(-100000) failed");
-	zassert_ok(rtc_get_calibration(rtc_dev, &calib),
-		   "get_calibration failed");
+	zassert_ok(rtc_set_calibration(rtc_dev, -100000), "set_calibration(-100000) failed");
+	zassert_ok(rtc_get_calibration(rtc_dev, &calib), "get_calibration failed");
 	printk("calibration: -100000 ppb -> %d ppb (quantized)\n", calib);
-	zassert_true(calib < -99500 && calib > -100500,
-		     "-100000 ppb read back as %d", calib);
+	zassert_true(calib < -99500 && calib > -100500, "-100000 ppb read back as %d", calib);
 
-	zassert_ok(rtc_set_calibration(rtc_dev, 0),
-		   "set_calibration(0) restore failed");
-	zassert_ok(rtc_get_calibration(rtc_dev, &calib),
-		   "get_calibration failed");
+	zassert_ok(rtc_set_calibration(rtc_dev, 0), "set_calibration(0) restore failed");
+	zassert_ok(rtc_get_calibration(rtc_dev, &calib), "get_calibration failed");
 	printk("calibration: restore 0 -> %d ppb\n", calib);
-	zassert_true(calib > -500 && calib < 500,
-		     "calibration not restored to 0 (got %d)", calib);
+	zassert_true(calib > -500 && calib < 500, "calibration not restored to 0 (got %d)", calib);
 }
 
 /**
@@ -435,8 +410,8 @@ ZTEST(rtc_nsing_l3, test_calibration_roundtrip)
  */
 ZTEST(rtc_nsing_l3, test_calendar_ticks)
 {
-	struct rtc_time t1 = { 0 };
-	struct rtc_time t2 = { 0 };
+	struct rtc_time t1 = {0};
+	struct rtc_time t2 = {0};
 	uint32_t total1, total2;
 
 	zassert_ok(rtc_get_time(rtc_dev, &t1), "rtc_get_time failed");
@@ -448,8 +423,7 @@ ZTEST(rtc_nsing_l3, test_calendar_ticks)
 		print_rtc_time("tick", &t2);
 		total1 = t1.tm_hour * 3600U + t1.tm_min * 60U + t1.tm_sec;
 		total2 = t2.tm_hour * 3600U + t2.tm_min * 60U + t2.tm_sec;
-		zassert_true(total2 >= total1 + 1,
-			     "calendar did not advance (was %u, now %u)",
+		zassert_true(total2 >= total1 + 1, "calendar did not advance (was %u, now %u)",
 			     total1, total2);
 		t1 = t2;
 	}

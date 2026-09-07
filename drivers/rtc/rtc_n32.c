@@ -34,11 +34,11 @@ LOG_MODULE_REGISTER(rtc_n32, CONFIG_RTC_LOG_LEVEL);
 
 #include <n32g45x.h>
 
-#define RTC_N32_CLK_SRC_LSE		    0
-#define RTC_N32_CLK_SRC_LSI		    1
-#define RTC_N32_CLK_SRC_HSE_DIV128	2
+#define RTC_N32_CLK_SRC_LSE        0
+#define RTC_N32_CLK_SRC_LSI        1
+#define RTC_N32_CLK_SRC_HSE_DIV128 2
 
-#define RTC_N32_CLK_SRC_IDX	DT_ENUM_IDX(DT_DRV_INST(0), nsing_rtc_clock_source)
+#define RTC_N32_CLK_SRC_IDX DT_ENUM_IDX(DT_DRV_INST(0), nsing_rtc_clock_source)
 
 BUILD_ASSERT(DT_NODE_HAS_PROP(DT_DRV_INST(0), nsing_rtc_clock_source),
 	     "rtc node enabled without nsing,rtc-clock-source: declare the board "
@@ -53,10 +53,10 @@ BUILD_ASSERT(DT_INST_CLOCKS_HAS_IDX(0, 0) && DT_INST_CLOCKS_HAS_IDX(0, 1),
 	     "clocks = <&rcc N32_CLOCK_BKP>, <&rcc N32_CLOCK_PWR>");
 
 /* RTCSEL[1:0] in RCC->BDCTRL */
-#define RTC_N32_BDCTRL_RTCSEL_MASK	0x00000300U
+#define RTC_N32_BDCTRL_RTCSEL_MASK 0x00000300U
 
 /* Poll bound for the init-mode and shadow-sync flag waits (INITF/RSYF). */
-#define RTC_N32_INITM_TIMEOUT		100000U
+#define RTC_N32_INITM_TIMEOUT 100000U
 
 /*
  * The prescalers are computed from the frequency of the declared clock
@@ -75,51 +75,50 @@ BUILD_ASSERT(DT_INST_CLOCKS_HAS_IDX(0, 0) && DT_INST_CLOCKS_HAS_IDX(0, 1),
  * rtc_n32_derive_prescalers() turns that frequency into the (PREDIV_A,
  * PREDIV_S) pair behind the 1 Hz calendar.
  */
-#define RTC_N32_CLK_FREQ_HZ							\
-	((RTC_N32_CLK_SRC_IDX == RTC_N32_CLK_SRC_LSE) ?			\
-		(uint32_t)DT_PROP(DT_NODELABEL(clk_lse), clock_frequency) :	\
-	 (RTC_N32_CLK_SRC_IDX == RTC_N32_CLK_SRC_LSI) ?			\
-		(uint32_t)DT_PROP(DT_NODELABEL(clk_lsi), clock_frequency) :	\
-		(uint32_t)(DT_PROP(DT_NODELABEL(clk_hse), clock_frequency) / 128))
+#define RTC_N32_CLK_FREQ_HZ                                                                        \
+	((RTC_N32_CLK_SRC_IDX == RTC_N32_CLK_SRC_LSE)                                              \
+		 ? (uint32_t)DT_PROP(DT_NODELABEL(clk_lse), clock_frequency)                       \
+	 : (RTC_N32_CLK_SRC_IDX == RTC_N32_CLK_SRC_LSI)                                            \
+		 ? (uint32_t)DT_PROP(DT_NODELABEL(clk_lsi), clock_frequency)                       \
+		 : (uint32_t)(DT_PROP(DT_NODELABEL(clk_hse), clock_frequency) / 128))
 
 /* The hse-div128 RTC clock only exists when the HSE declaration is a multiple of 128. */
 BUILD_ASSERT((RTC_N32_CLK_SRC_IDX != RTC_N32_CLK_SRC_HSE_DIV128) ||
-	     ((DT_PROP(DT_NODELABEL(clk_hse), clock_frequency) % 128) == 0),
+		     ((DT_PROP(DT_NODELABEL(clk_hse), clock_frequency) % 128) == 0),
 	     "clk_hse clock-frequency must be a multiple of 128 for hse-div128");
 
 /* Prescaler register widths (silicon limits). */
-#define RTC_N32_PREDIV_A_MAX	0x7FU	/* PREDIV_A + 1 in [1, 128] */
-#define RTC_N32_PREDIV_S_MAX	0x7FFFU	/* apre = PREDIV_S + 1 <= 32768 */
+#define RTC_N32_PREDIV_A_MAX 0x7FU   /* PREDIV_A + 1 in [1, 128] */
+#define RTC_N32_PREDIV_S_MAX 0x7FFFU /* apre = PREDIV_S + 1 <= 32768 */
 
 /* N32 stores the year 2000 + Y in BCD year field [0, 99]; tm_year is year - 1900. */
-#define RTC_N32_TM_YEAR_MIN		100
-#define RTC_N32_TM_YEAR_MAX		199
+#define RTC_N32_TM_YEAR_MIN 100
+#define RTC_N32_TM_YEAR_MAX 199
 
 /* tm_wday: 0 = Sunday .. 6 = Saturday. N32: 1 = Monday .. 7 = Sunday. */
-#define RTC_N32_WDAY_TO_TM(wday)	((wday) % 7)
-#define RTC_N32_WDAY_FROM_TM(wday)	(((wday) + 6) % 7 + 1)
+#define RTC_N32_WDAY_TO_TM(wday)   ((wday) % 7)
+#define RTC_N32_WDAY_FROM_TM(wday) (((wday) + 6) % 7 + 1)
 
 #ifdef CONFIG_RTC_ALARM
 
 /* Number of alarms is a DT property: 1 exposes alarm A only, 2 adds alarm B. */
-#define RTC_N32_ALARMS_COUNT		DT_INST_PROP(0, alarms_count)
+#define RTC_N32_ALARMS_COUNT DT_INST_PROP(0, alarms_count)
 
-#define RTC_N32_ALRM_A			0U
-#define RTC_N32_ALRM_B			1U
+#define RTC_N32_ALRM_A 0U
+#define RTC_N32_ALRM_B 1U
 
 /* Zephyr alarm time fields supported by the hardware (stm32 parity). */
-#define RTC_N32_SUPPORTED_ALARM_FIELDS						\
-	(RTC_ALARM_TIME_MASK_SECOND | RTC_ALARM_TIME_MASK_MINUTE |		\
-	 RTC_ALARM_TIME_MASK_HOUR | RTC_ALARM_TIME_MASK_WEEKDAY |		\
-	 RTC_ALARM_TIME_MASK_MONTHDAY)
+#define RTC_N32_SUPPORTED_ALARM_FIELDS                                                             \
+	(RTC_ALARM_TIME_MASK_SECOND | RTC_ALARM_TIME_MASK_MINUTE | RTC_ALARM_TIME_MASK_HOUR |      \
+	 RTC_ALARM_TIME_MASK_WEEKDAY | RTC_ALARM_TIME_MASK_MONTHDAY)
 
 /* The RTC alarm event is routed to the NVIC through the EXTI line declared
  * as alrm-exti-line (17 on N32G45x, same as stm32f4): the line is a DT
  * property, not a hard coded literal.
  */
-#define RTC_N32_EXTI_ALARM_LINE		DT_INST_PROP(0, alrm_exti_line)
+#define RTC_N32_EXTI_ALARM_LINE DT_INST_PROP(0, alrm_exti_line)
 /* EXTI->IMASK / RT_CFG / PEND are plain per-line bit maps. */
-#define RTC_N32_EXTI_ALARM_BIT		BIT(RTC_N32_EXTI_ALARM_LINE)
+#define RTC_N32_EXTI_ALARM_BIT  BIT(RTC_N32_EXTI_ALARM_LINE)
 
 #endif /* CONFIG_RTC_ALARM */
 
@@ -133,17 +132,15 @@ BUILD_ASSERT((RTC_N32_CLK_SRC_IDX != RTC_N32_CLK_SRC_HSE_DIV128) ||
  *
  * nb_pulses = ppb * 2^20 / 10^9 = ppb * 2^11 / 5^9 = ppb * 2048 / 1953125
  */
-#define RTC_N32_CALIB_PPB_TO_NB_PULSES(ppb)	DIV_ROUND_CLOSEST((ppb) * 2048, 1953125)
-#define RTC_N32_CALIB_NB_PULSES_TO_PPB(pulses)	DIV_ROUND_CLOSEST((pulses) * 1953125, 2048)
+#define RTC_N32_CALIB_PPB_TO_NB_PULSES(ppb)    DIV_ROUND_CLOSEST((ppb) * 2048, 1953125)
+#define RTC_N32_CALIB_NB_PULSES_TO_PPB(pulses) DIV_ROUND_CLOSEST((pulses) * 1953125, 2048)
 
 /* CP is a single bit representing 512 pulses per window; CM is 9 bits (0-511). */
-#define RTC_N32_CALIB_MAX_CALP		512
-#define RTC_N32_CALIB_MAX_CALM		511
+#define RTC_N32_CALIB_MAX_CALP 512
+#define RTC_N32_CALIB_MAX_CALM 511
 
-#define RTC_N32_CALIB_MAX_PPB							\
-	RTC_N32_CALIB_NB_PULSES_TO_PPB(RTC_N32_CALIB_MAX_CALP)
-#define RTC_N32_CALIB_MIN_PPB							\
-	(-RTC_N32_CALIB_NB_PULSES_TO_PPB(RTC_N32_CALIB_MAX_CALM))
+#define RTC_N32_CALIB_MAX_PPB RTC_N32_CALIB_NB_PULSES_TO_PPB(RTC_N32_CALIB_MAX_CALP)
+#define RTC_N32_CALIB_MIN_PPB (-RTC_N32_CALIB_NB_PULSES_TO_PPB(RTC_N32_CALIB_MAX_CALM))
 #endif /* CONFIG_RTC_CALIBRATION */
 
 #ifdef CONFIG_RTC_ALARM
@@ -191,7 +188,7 @@ static bool rtc_n32_osc_ready(uint8_t rdy_flag)
  * (e.g. a crystal that never starts); the success path lasts exactly as
  * long as the oscillator start-up.
  */
-#define RTC_N32_OSC_POLL_COST_CYCLES	32U
+#define RTC_N32_OSC_POLL_COST_CYCLES 32U
 
 static int rtc_n32_wait_flag(uint8_t flag, uint32_t timeout_us)
 {
@@ -256,7 +253,8 @@ static int rtc_n32_clock_init(void)
 			ret = rtc_n32_wait_flag(RCC_FLAG_LSERD, 3000000);
 			if (ret < 0) {
 				LOG_ERR("LSE did not start: check that a 32.768 kHz crystal is "
-					"present and the nsing,rtc-clock-source declaration matches "
+					"present and the nsing,rtc-clock-source declaration "
+					"matches "
 					"the hardware");
 				return ret;
 			}
@@ -348,9 +346,8 @@ static int rtc_n32_derive_prescalers(uint32_t freq, uint16_t *diva, uint16_t *di
 	uint32_t apre;
 	uint32_t d;
 
-	if ((freq < 2U) ||
-	    (freq > (uint32_t)(RTC_N32_PREDIV_A_MAX + 1U) *
-		    (uint32_t)(RTC_N32_PREDIV_S_MAX + 1U))) {
+	if ((freq < 2U) || (freq > (uint32_t)(RTC_N32_PREDIV_A_MAX + 1U) *
+					   (uint32_t)(RTC_N32_PREDIV_S_MAX + 1U))) {
 		return -EINVAL;
 	}
 
@@ -406,8 +403,9 @@ static int rtc_n32_seed_calendar(struct rtc_n32_data *data)
 	RTC->WRP = 0x53;
 
 	RTC->INITSTS |= RTC_INITSTS_INITM;
-	for (uint32_t timeout = 0; (RTC->INITSTS & RTC_INITSTS_INITF) == 0U
-	     && timeout < RTC_N32_INITM_TIMEOUT; timeout++) {
+	for (uint32_t timeout = 0;
+	     (RTC->INITSTS & RTC_INITSTS_INITF) == 0U && timeout < RTC_N32_INITM_TIMEOUT;
+	     timeout++) {
 	}
 	if ((RTC->INITSTS & RTC_INITSTS_INITF) == 0U) {
 		RTC->WRP = 0xFF;
@@ -416,7 +414,7 @@ static int rtc_n32_seed_calendar(struct rtc_n32_data *data)
 	}
 
 	RTC->PRE = ((uint32_t)diva << 16) | divs;
-	RTC->TSH = 0x00000000UL; /* 00:00:00, 24 h format */
+	RTC->TSH = 0x00000000UL;  /* 00:00:00, 24 h format */
 	RTC->DATE = 0x00002101UL; /* 2000-01-01, Monday */
 
 	RTC->INITSTS &= ~RTC_INITSTS_INITM;
@@ -430,8 +428,7 @@ static int rtc_n32_seed_calendar(struct rtc_n32_data *data)
 		return -EIO;
 	}
 
-	LOG_INF("RTC calendar seeded at 1 Hz: PREDIV_A = %u, PREDIV_S = %u",
-		diva, divs);
+	LOG_INF("RTC calendar seeded at 1 Hz: PREDIV_A = %u, PREDIV_S = %u", diva, divs);
 
 	/* Remember the value actually programmed for the sub-second math. */
 	data->divs = RTC->PRE & RTC_N32_PREDIV_S_MAX;
@@ -471,10 +468,9 @@ static inline bool rtc_n32_alarm_id_valid(uint16_t id)
  * MONTHDAY share a single hardware comparison field (WKDSEL chooses which one
  * is matched), so at most one of them may be active.
  */
-static void rtc_n32_alarm_config_hw(const struct rtc_time *timeptr, uint16_t id,
-				    uint16_t mask)
+static void rtc_n32_alarm_config_hw(const struct rtc_time *timeptr, uint16_t id, uint16_t mask)
 {
-	RTC_AlarmType alarm = { 0 };
+	RTC_AlarmType alarm = {0};
 
 	alarm.AlarmMask = RTC_ALARMMASK_ALL;
 
@@ -518,8 +514,7 @@ static void rtc_n32_isr(const struct device *dev)
 			data->alarm[id].is_pending = true;
 
 			if (data->alarm[id].user_callback != NULL) {
-				data->alarm[id].user_callback(dev, id,
-							      data->alarm[id].user_data);
+				data->alarm[id].user_callback(dev, id, data->alarm[id].user_data);
 			}
 		}
 	}
@@ -539,13 +534,12 @@ static void rtc_n32_irq_setup(const struct device *dev)
 	EXTI->RT_CFG |= RTC_N32_EXTI_ALARM_BIT;
 	EXTI->PEND = RTC_N32_EXTI_ALARM_BIT;
 
-	IRQ_CONNECT(DT_INST_IRQN(0), DT_INST_IRQ(0, priority), rtc_n32_isr,
-		    DEVICE_DT_INST_GET(0), 0);
+	IRQ_CONNECT(DT_INST_IRQN(0), DT_INST_IRQ(0, priority), rtc_n32_isr, DEVICE_DT_INST_GET(0),
+		    0);
 	irq_enable(DT_INST_IRQN(0));
 }
 
-static int rtc_n32_alarm_get_supported_fields(const struct device *dev, uint16_t id,
-					      uint16_t *mask)
+static int rtc_n32_alarm_get_supported_fields(const struct device *dev, uint16_t id, uint16_t *mask)
 {
 	if (mask == NULL) {
 		LOG_ERR("NULL mask pointer");
@@ -603,8 +597,7 @@ static int rtc_n32_alarm_set_time(const struct device *dev, uint16_t id, uint16_
 		goto unlock;
 	}
 
-	if ((mask & RTC_ALARM_TIME_MASK_WEEKDAY) &&
-	    (mask & RTC_ALARM_TIME_MASK_MONTHDAY)) {
+	if ((mask & RTC_ALARM_TIME_MASK_WEEKDAY) && (mask & RTC_ALARM_TIME_MASK_MONTHDAY)) {
 		/* The hardware can match weekday OR monthday, not both. */
 		LOG_ERR("alarm %d cannot match weekday and monthday simultaneously", id);
 		err = -EINVAL;
@@ -624,8 +617,9 @@ static int rtc_n32_alarm_set_time(const struct device *dev, uint16_t id, uint16_
 	}
 
 	LOG_DBG("set alarm %d: second = %d, min = %d, hour = %d, wday = %d, "
-		"mday = %d, mask = 0x%04x", id, timeptr->tm_sec, timeptr->tm_min,
-		timeptr->tm_hour, timeptr->tm_wday, timeptr->tm_mday, mask);
+		"mday = %d, mask = 0x%04x",
+		id, timeptr->tm_sec, timeptr->tm_min, timeptr->tm_hour, timeptr->tm_wday,
+		timeptr->tm_mday, mask);
 
 	/*
 	 * The register can only be rewritten while the alarm is off (the
@@ -708,8 +702,9 @@ static int rtc_n32_alarm_get_time(const struct device *dev, uint16_t id, uint16_
 	}
 
 	LOG_DBG("get alarm %d: mday = %d, wday = %d, hour = %d, min = %d, sec = %d, "
-		"mask = 0x%04x", id, timeptr->tm_mday, timeptr->tm_wday,
-		timeptr->tm_hour, timeptr->tm_min, timeptr->tm_sec, *mask);
+		"mask = 0x%04x",
+		id, timeptr->tm_mday, timeptr->tm_wday, timeptr->tm_hour, timeptr->tm_min,
+		timeptr->tm_sec, *mask);
 
 	return err;
 }
@@ -792,8 +787,9 @@ static int rtc_n32_init(const struct device *dev)
 	}
 
 	LOG_INF("N32 RTC ready (clock source: %s, %u Hz)",
-		RTC_N32_CLK_SRC_IDX == RTC_N32_CLK_SRC_LSE ? "lse" :
-		RTC_N32_CLK_SRC_IDX == RTC_N32_CLK_SRC_LSI ? "lsi" : "hse-div128",
+		RTC_N32_CLK_SRC_IDX == RTC_N32_CLK_SRC_LSE   ? "lse"
+		: RTC_N32_CLK_SRC_IDX == RTC_N32_CLK_SRC_LSI ? "lsi"
+							     : "hse-div128",
 		(uint32_t)RTC_N32_CLK_FREQ_HZ);
 
 #ifdef CONFIG_RTC_ALARM
@@ -815,14 +811,11 @@ static int rtc_n32_set_time(const struct device *dev, const struct rtc_time *tim
 		return -EINVAL;
 	}
 
-	if (!rtc_utils_validate_rtc_time(timeptr,
-					 RTC_ALARM_TIME_MASK_SECOND |
-					 RTC_ALARM_TIME_MASK_MINUTE |
-					 RTC_ALARM_TIME_MASK_HOUR |
-					 RTC_ALARM_TIME_MASK_MONTHDAY |
-					 RTC_ALARM_TIME_MASK_MONTH |
-					 RTC_ALARM_TIME_MASK_YEAR |
-					 RTC_ALARM_TIME_MASK_WEEKDAY)) {
+	if (!rtc_utils_validate_rtc_time(
+		    timeptr, RTC_ALARM_TIME_MASK_SECOND | RTC_ALARM_TIME_MASK_MINUTE |
+				     RTC_ALARM_TIME_MASK_HOUR | RTC_ALARM_TIME_MASK_MONTHDAY |
+				     RTC_ALARM_TIME_MASK_MONTH | RTC_ALARM_TIME_MASK_YEAR |
+				     RTC_ALARM_TIME_MASK_WEEKDAY)) {
 		return -EINVAL;
 	}
 
@@ -878,9 +871,8 @@ static int rtc_n32_get_time(const struct device *dev, struct rtc_time *timeptr)
 		RTC_GetTime(RTC_FORMAT_BIN, &t2);
 		RTC_GetDate(RTC_FORMAT_BIN, &d2);
 
-		if (t1.Seconds == t2.Seconds && t1.Minutes == t2.Minutes &&
-		    t1.Hours == t2.Hours && d1.Date == d2.Date &&
-		    d1.Month == d2.Month && d1.Year == d2.Year &&
+		if (t1.Seconds == t2.Seconds && t1.Minutes == t2.Minutes && t1.Hours == t2.Hours &&
+		    d1.Date == d2.Date && d1.Month == d2.Month && d1.Year == d2.Year &&
 		    d1.WeekDay == d2.WeekDay) {
 			break;
 		}
@@ -950,8 +942,7 @@ static int rtc_n32_set_calibration(const struct device *dev, int32_t calibration
 	 * previous boot may have left pending (2^20 cycles at the slowest
 	 * declared RTC clock, ~32 s, with margin).
 	 */
-	for (uint32_t i = 0; i < 100000U &&
-	     (RTC->INITSTS & RTC_INITSTS_RECPF) != 0U; i++) {
+	for (uint32_t i = 0; i < 100000U && (RTC->INITSTS & RTC_INITSTS_RECPF) != 0U; i++) {
 		k_sleep(K_MSEC(1));
 	}
 
