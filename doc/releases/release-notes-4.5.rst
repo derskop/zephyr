@@ -618,6 +618,10 @@ New Drivers
 
   * VIRTIO input device (:dtcompatible:`virtio,input`).
 
+* RTC
+
+  * Nations Technologies N32 RTC (:dtcompatible:`nsing,n32-rtc`).
+
 * Sensors
 
   * Analog Devices ADXL313 3-axis accelerometer (:dtcompatible:`adi,adxl313`).
