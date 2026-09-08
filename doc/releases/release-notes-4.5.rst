@@ -605,6 +605,15 @@ New Drivers
   * ST Zio connector for STM32 Nucleo-144 boards
     (:dtcompatible:`st-zio-header`).
 
+* Flash
+
+  * Nations Technologies N32 embedded flash controller
+    (:dtcompatible:`nsing,n32-flash-controller`).
+
+* Hardware information
+
+  * Nations Technologies N32 96-bit unique device identifier support.
+
 * Input
 
   * VIRTIO input device (:dtcompatible:`virtio,input`).

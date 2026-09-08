@@ -7,6 +7,13 @@ common:
     - drivers
     - flash
 tests:
+  drivers.flash.erase_blocks.n32:
+    harness: ztest
+    sysbuild: false
+    platform_allow:
+      - n32g45xml_stb/n32g457
+    integration_platforms:
+      - n32g45xml_stb/n32g457
   drivers.flash.erase_blocks.build_only:
     harness: ztest
     build_only: true

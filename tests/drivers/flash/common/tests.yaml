@@ -1,8 +1,14 @@
 common:
+  harness: ztest
   tags:
     - drivers
     - flash
 tests:
+  drivers.flash.common.n32:
+    platform_allow:
+      - n32g45xml_stb/n32g457
+    integration_platforms:
+      - n32g45xml_stb/n32g457
   drivers.flash.common.nrf_qspi_nor:
     platform_allow: nrf52840dk/nrf52840
     extra_args: EXTRA_CONF_FILE=boards/nrf52840dk_nrf52840_qspi_nor.conf

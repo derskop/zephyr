@@ -1,0 +1,13 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  drivers.hwinfo.n32_uid:
+    tags:
+      - drivers
+      - hwinfo
+    harness: ztest
+    platform_allow:
+      - n32g45xml_stb/n32g457
+    vendor_allow:
+      - nsing
