@@ -1,0 +1,32 @@
+# SPDX-License-Identifier: Apache-2.0
+# Copyright (c) 2026
+
+description: Nations Technologies N32 SDIO host controller
+
+compatible: "nsing,n32-sdio"
+
+include: [sdhc.yaml, pinctrl-device.yaml]
+
+properties:
+  reg:
+    required: true
+
+  clocks:
+    required: true
+
+  interrupts:
+    required: true
+
+  pinctrl-0:
+    required: true
+
+  pinctrl-names:
+    required: true
+
+  bus-width:
+    type: int
+    default: 1
+    enum:
+      - 1
+      - 4
+    description: Number of SD data lines connected to the card

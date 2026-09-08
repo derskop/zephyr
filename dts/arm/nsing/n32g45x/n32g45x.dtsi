@@ -467,15 +467,13 @@
 		};
 */
 
-/*
 		sdio: sdio@40018000 {
-			compatible = "nsing,n32-sdio";	
+			compatible = "nsing,n32-sdio";
 			reg = <0x40018000 0x400>;
 			clocks = <&rcc N32_CLOCK_SDIO>;
 			interrupts = <49 0>;
 			status = "disabled";
 		};
-*/
 
 /*
 		dvp: dvp@40014c00 {
