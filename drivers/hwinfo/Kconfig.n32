@@ -1,0 +1,12 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config HWINFO_N32
+	bool "Nations Technologies N32 hardware information"
+	default y
+	depends on SOC_FAMILY_NSING_N32
+	select HWINFO_HAS_DRIVER
+	select USE_NSING_DBG
+	help
+	  Enable hardware information support for Nations Technologies N32
+	  SoCs. The driver exposes the 96-bit unique device identifier.

@@ -46,6 +46,8 @@ The Zephyr n32g45xml_stb board configuration supports the following hardware fea
 +-----------+------------+-------------------------------------+
 | FLASH     | on-chip    | flash memory                        |
 +-----------+------------+-------------------------------------+
+| HWINFO    | on-chip    | 96-bit unique device identifier     |
++-----------+------------+-------------------------------------+
 | WATCHDOG  | on-chip    | independent watchdog                |
 +-----------+------------+-------------------------------------+
 | I2C       | on-chip    | i2c                                 |

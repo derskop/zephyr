@@ -1,0 +1,15 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config SOC_FLASH_N32
+	bool "Nations Technologies N32 flash driver"
+	default y
+	depends on SOC_FAMILY_NSING_N32
+	depends on DT_HAS_NSING_N32_FLASH_CONTROLLER_ENABLED
+	select FLASH_HAS_DRIVER_ENABLED
+	select FLASH_HAS_EXPLICIT_ERASE
+	select FLASH_HAS_PAGE_LAYOUT
+	select MPU_ALLOW_FLASH_WRITE if ARM_MPU
+	select USE_NSING_FLASH
+	help
+	  Enable the embedded flash driver for Nations Technologies N32 SoCs.

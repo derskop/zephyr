@@ -91,8 +91,8 @@
 			flash0: flash@8000000 {
 				compatible = "soc-nv-flash";
 				reg = <0x08000000 0x80000>;
-				write-block-size = <2>;
-				erase-block-size = <2>;
+				write-block-size = <4>;
+				erase-block-size = <0x800>;
 			};
 		};
 

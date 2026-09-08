@@ -1494,6 +1494,15 @@ New Drivers
 
   * :dtcompatible:`silabs,efr32-ieee802154` (:github:`108596`)
 
+* Flash
+
+  * Nations Technologies N32 embedded flash controller
+    (:dtcompatible:`nsing,n32-flash-controller`).
+
+* Hardware information
+
+  * Nations Technologies N32 96-bit unique device identifier support.
+
 * Input
 
   * :dtcompatible:`tbs,crsf` (:github:`106941`)

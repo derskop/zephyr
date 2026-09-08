@@ -1,5 +1,6 @@
 tests:
   drivers.hwinfo.api:
+    harness: ztest
     tags:
       - drivers
       - hwinfo

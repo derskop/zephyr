@@ -5,12 +5,9 @@ description: Nations Technologies N32 flash controller
 
 compatible: "nsing,n32-flash-controller"
 
-include: [base.yaml]
+include: flash-controller.yaml
 
 properties:
-  reg:
-    required: true
-
   "#address-cells":
     type: int
     const: 1
