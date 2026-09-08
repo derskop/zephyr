@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 tests:
-  drivers.can.n32_bxcan:
+  drivers.can.n32_bxcan.loopback:
     tags:
       - drivers
       - can
@@ -13,4 +13,21 @@ tests:
       - n32g45xml_stb
     vendor_allow:
       - nsing
+    timeout: 120
+
+  drivers.can.n32_bxcan.normal:
+    tags:
+      - drivers
+      - can
+    harness: ztest
+    harness_config:
+      fixture: n32_can_bus
+    depends_on:
+      - can
+    platform_allow:
+      - n32g45xml_stb
+    vendor_allow:
+      - nsing
+    extra_configs:
+      - CONFIG_TEST_CAN_N32_NORMAL_MODE=y
     timeout: 120
