@@ -1,0 +1,12 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+mainmenu "N32 bxCAN driver test"
+
+source "Kconfig.zephyr"
+
+config TEST_CAN_N32_NORMAL_MODE
+	bool "Run the external normal-mode CAN bus tests"
+	help
+	  Enable tests which require CAN1 and CAN2 to each be connected through
+	  a transceiver to the same correctly terminated physical CAN bus.

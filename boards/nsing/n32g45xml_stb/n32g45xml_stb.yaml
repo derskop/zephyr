@@ -9,6 +9,7 @@ toolchain:
 ram: 144
 flash: 512
 supported:
+  - can
   - gpio
   - i2c
   - spi
