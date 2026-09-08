@@ -1,0 +1,16 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config WDT_N32_IWDG
+	bool "Nations N32 independent watchdog driver"
+	default y
+	depends on DT_HAS_NSING_N32_IWDG_ENABLED
+	help
+	  Enable the independent watchdog (IWDG) driver for Nations N32 MCUs.
+
+config WDT_N32_WWDG
+	bool "Nations N32 window watchdog driver"
+	default y
+	depends on DT_HAS_NSING_N32_WWDG_ENABLED
+	help
+	  Enable the window watchdog (WWDG) driver for Nations N32 MCUs.
