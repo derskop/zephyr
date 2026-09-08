@@ -138,6 +138,9 @@
 #define WDT_TEST_MAX_WINDOW 200
 #endif
 #endif
+#if DT_HAS_COMPAT_STATUS_OKAY(nsing_n32_wwdg)
+#define WDT_TEST_MAX_WINDOW 20U
+#endif
 #if DT_HAS_COMPAT_STATUS_OKAY(nordic_nrf_gswdt) && !defined(CONFIG_NRFS_GSWDT_SERVICE_ENABLED)
 #define WDT_TEST_MAX_WINDOW 6000U
 #endif

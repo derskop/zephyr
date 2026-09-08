@@ -153,6 +153,18 @@ tests:
       - longan_nano
     integration_platforms:
       - gd32e103v_eval
+  drivers.watchdog.n32_iwdg:
+    extra_args: DTC_OVERLAY_FILE="boards/n32_iwdg.overlay"
+    platform_allow:
+      - n32g45xml_stb
+    integration_platforms:
+      - n32g45xml_stb
+  drivers.watchdog.n32_wwdg:
+    extra_args: DTC_OVERLAY_FILE="boards/n32_wwdg.overlay"
+    platform_allow:
+      - n32g45xml_stb
+    integration_platforms:
+      - n32g45xml_stb
   drivers.watchdog.nxp_s32:
     build_only: true
     platform_allow:
