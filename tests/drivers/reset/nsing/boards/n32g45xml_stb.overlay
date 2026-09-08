@@ -1,0 +1,16 @@
+/*
+ * Use USART1's default PA9/PA10 mapping for hardware-test output.
+ */
+
+/ {
+	chosen {
+		zephyr,console = &usart1;
+	};
+};
+
+&usart1 {
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};

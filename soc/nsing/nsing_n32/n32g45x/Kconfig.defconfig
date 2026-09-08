@@ -6,6 +6,9 @@
 
 if SOC_SERIES_N32G45X
 
+config RESET
+	default y
+
 config NUM_IRQS
 	default 86
 

@@ -1,0 +1,7 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config RESET_N32
+	bool "Nations N32 reset controller driver"
+	default y
+	depends on DT_HAS_NSING_N32_RCC_RCTL_ENABLED
