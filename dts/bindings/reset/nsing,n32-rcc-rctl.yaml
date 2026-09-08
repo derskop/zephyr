@@ -1,0 +1,15 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: Nations N32 Reset and Clock Control (RCC) reset controller
+
+compatible: "nsing,n32-rcc-rctl"
+
+include: [reset-controller.yaml, base.yaml]
+
+properties:
+  "#reset-cells":
+    const: 1
+
+reset-cells:
+  - id

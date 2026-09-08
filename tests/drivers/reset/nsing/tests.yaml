@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  drivers.reset.nsing:
+    tags:
+      - drivers
+      - reset
+    platform_allow: n32g45xml_stb
+    vendor_allow:
+      - nsing
