@@ -1,0 +1,81 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Nations Technologies N32G45x operational amplifier (OPAMP)
+
+  The N32G45x integrates 4 independent operational amplifiers
+  (OPAMP1..OPAMP4).  Each amplifier may be driven by its own
+  devicetree node, e.g.:
+
+    opamp1: opamp@40002000 {
+      compatible = "nsing,n32-opamp";
+      reg = <0x40002000 0x10>;
+      clocks = <&rcc N32_CLOCK_OPAMP>;
+      functional-mode = "non_inverting";
+      positive-input = "PA1";
+      status = "okay";
+    };
+
+  Supported functional modes (see opamp-controller.yaml for the
+  full list):
+    - "non_inverting": internal PGA, programmable gain x2/x4/x8/x16/x32
+    - "follower":      internal follower (gain fixed to x1)
+    - "standalone":    external op-amp, gain set by external resistors
+
+  The internal resistive network of the N32G45x only provides
+  non-inverting PGA gains, so the "inverting" and "differential"
+  modes must be implemented with an external network.  Configuring
+  one of those modes makes the driver fail with -EINVAL; use
+  "standalone" instead for external-network amplifiers.
+
+  NOTE: positive-input values are instance specific.  When a value
+  is not routable to the selected OPAMP instance the driver fails
+  initialization with -EINVAL.
+
+include:
+  - opamp-controller.yaml
+
+compatible: "nsing,n32-opamp"
+
+properties:
+  reg:
+    required: true
+  clocks:
+    required: true
+
+  positive-input:
+    type: string
+    description: |
+      Selects the non-inverting (+) input source.  Each OPAMP can be
+      muxed to a subset of these pads/internal signals (see the
+      "positive-input" lookup table in the driver); selecting an input
+      that is not reachable by the instance fails initialization.
+    enum:
+      - PA1
+      - PA3
+      - PA7
+      - PB0
+      - PE8
+      - PC9
+      - PC3
+      - PC5
+      - DAC1
+      - DAC2
+
+  negative-input:
+    type: string
+    description: |
+      Selects the inverting (-) input source.  Only meaningful in
+      "standalone" mode; in "follower" and "non_inverting" modes the
+      inverting input is internally forced to the required connection
+      (follower: output shorted to inverting input; PGA: floating).
+    enum:
+      - PA2
+      - PA3
+      - PA5
+      - PC4
+      - PB10
+      - PC9
+      - PD8
+      - FLOAT

@@ -9,8 +9,9 @@
  *         RTC, SDIO, DVP, ETH, QSPI, IWDG, WWDG, BKP, PWR, CRC,
  *         EXTI, COMP, OPAMP, TSC, RCC, FLASH, SRAM, GPIOA~G, USART/UART。
  *
- * 注意：TIM/DMA/RTC/SDIO/DVP/ETH/QSPI/IWDG/WWDG/BKP/PWR/CRC/EXTI/COMP/OPAMP/TSC
+ * 注意：TIM/DMA/RTC/SDIO/DVP/ETH/QSPI/IWDG/WWDG/BKP/PWR/CRC/EXTI/TSC
  *       等外设暂无 Zephyr 驱动，已用块注释暂时注释掉，后续补驱动再启用。
+ * COMP（7 路）与 OPAMP（4 路）驱动见 drivers/comparator 与 drivers/opamp。
  */
 
 #include <mem.h>
@@ -346,89 +347,89 @@
 
 		};
 
-		/* ---- 定时器（需补 binding nsing,n32-tim） ---- */
-
-/*
+		/* TIM1 and TIM8 are advanced timers; TIM2-TIM5 are general-purpose. */
 		tim1: tim@40012c00 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40012c00 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM1>;
 			interrupts = <25 0>, <24 0>, <26 0>, <27 0>;
 			interrupt-names = "up", "brk", "trg_com", "cc";
+			prescaler = <0>;
+			channels = <4>;
+			advanced;
 			status = "disabled";
+			pwm1: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
-
-/*
 		tim2: tim@40000000 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40000000 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM2>;
 			interrupts = <28 0>;
+			prescaler = <0>;
+			channels = <4>;
 			status = "disabled";
+			pwm2: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
-
-/*
 		tim3: tim@40000400 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40000400 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM3>;
 			interrupts = <29 0>;
+			prescaler = <0>;
+			channels = <4>;
 			status = "disabled";
+			pwm3: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
-
-/*
 		tim4: tim@40000800 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40000800 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM4>;
 			interrupts = <30 0>;
+			prescaler = <0>;
+			channels = <4>;
 			status = "disabled";
+			pwm4: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
-
-/*
 		tim5: tim@40000c00 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40000c00 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM5>;
 			interrupts = <50 0>;
+			prescaler = <0>;
+			channels = <4>;
 			status = "disabled";
+			pwm5: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
-
-/*
 		tim6: tim@40001000 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40001000 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM6>;
 			interrupts = <54 0>;
+			prescaler = <0>;
+			channels = <0>;
 			status = "disabled";
 		};
-*/
-
-/*
 		tim7: tim@40001400 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40001400 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM7>;
 			interrupts = <55 0>;
+			prescaler = <0>;
+			channels = <0>;
 			status = "disabled";
 		};
-*/
-
-/*
 		tim8: tim@40013400 {
-			compatible = "nsing,n32-tim";	
+			compatible = "nsing,n32-tim";
 			reg = <0x40013400 0x400>;
 			clocks = <&rcc N32_CLOCK_TIM8>;
 			interrupts = <44 0>, <43 0>, <45 0>, <46 0>;
 			interrupt-names = "up", "brk", "trg_com", "cc";
+			prescaler = <0>;
+			channels = <4>;
+			advanced;
 			status = "disabled";
+			pwm8: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
-*/
 
 		/* ---- DMA（需补 binding nsing,n32-dma） ---- */
 
@@ -543,14 +544,12 @@
 		};
 */
 
-/*
-		crc: crc@40023000 {
-			compatible = "nsing,n32-crc";	
-			reg = <0x40023000 0x400>;
-			clocks = <&rcc N32_CLOCK_CRC>;
-			status = "disabled";
-		};
-*/
+	crc: crc@40023000 {
+		compatible = "nsing,n32-crc";
+		reg = <0x40023000 0x400>;
+		clocks = <&rcc N32_CLOCK_CRC>;
+		status = "disabled";
+	};
 
 		/* EXTI 与 AFIO 共用时钟，直接挂在 APB2 上 */
 		exti: interrupt-controller@40010400 {
@@ -567,24 +566,81 @@
 				      <4 1>, <5 5>, <10 6>;
 		};
 
-/*
-		comp: comp@40002400 {
-			compatible = "nsing,n32-comp";	
-			reg = <0x40002400 0x400>;
+		/* N32G45x COMP / OPAMP 每路一个 device 节点（对应 Zephyr 通用 comparator/opamp 子系统）
+		 * 基址: COMP=0x40002400 (各通道 CTRL +0x10 起步), OPAMP=0x40002000 (各通道 CS +0x10)。
+		 * COMP 中断为共享线: COMP1/2/3->82, COMP4/5/6->83, COMP7->84。
+		 * 同一组内同一时刻仅允许一个比较器使用中断回调, 故只在每组第一个 (comp1/comp4/comp7) 挂 interrupts。
+		 */
+		comp1: comparator@40002410 {
+			compatible = "nsing,n32-comp";
+			reg = <0x40002410 0x10>;
 			clocks = <&rcc N32_CLOCK_COMP>;
 			interrupts = <82 0>;
 			status = "disabled";
 		};
-*/
-
-/*
-		opamp: opamp@40002000 {
-			compatible = "nsing,n32-opamp";	
-			reg = <0x40002000 0x400>;
+		comp2: comparator@40002420 {
+			compatible = "nsing,n32-comp";
+			reg = <0x40002420 0x10>;
+			clocks = <&rcc N32_CLOCK_COMP>;
+			status = "disabled";
+		};
+		comp3: comparator@40002430 {
+			compatible = "nsing,n32-comp";
+			reg = <0x40002430 0x10>;
+			clocks = <&rcc N32_CLOCK_COMP>;
+			status = "disabled";
+		};
+		comp4: comparator@40002440 {
+			compatible = "nsing,n32-comp";
+			reg = <0x40002440 0x10>;
+			clocks = <&rcc N32_CLOCK_COMP>;
+			interrupts = <83 0>;
+			status = "disabled";
+		};
+		comp5: comparator@40002450 {
+			compatible = "nsing,n32-comp";
+			reg = <0x40002450 0x10>;
+			clocks = <&rcc N32_CLOCK_COMP>;
+			status = "disabled";
+		};
+		comp6: comparator@40002460 {
+			compatible = "nsing,n32-comp";
+			reg = <0x40002460 0x10>;
+			clocks = <&rcc N32_CLOCK_COMP>;
+			status = "disabled";
+		};
+		comp7: comparator@40002470 {
+			compatible = "nsing,n32-comp";
+			reg = <0x40002470 0x10>;
+			clocks = <&rcc N32_CLOCK_COMP>;
+			interrupts = <84 0>;
+			status = "disabled";
+		};
+		opamp1: opamp@40002000 {
+			compatible = "nsing,n32-opamp";
+			reg = <0x40002000 0x10>;
 			clocks = <&rcc N32_CLOCK_OPAMP>;
 			status = "disabled";
 		};
-*/
+		opamp2: opamp@40002010 {
+			compatible = "nsing,n32-opamp";
+			reg = <0x40002010 0x10>;
+			clocks = <&rcc N32_CLOCK_OPAMP>;
+			status = "disabled";
+		};
+		opamp3: opamp@40002020 {
+			compatible = "nsing,n32-opamp";
+			reg = <0x40002020 0x10>;
+			clocks = <&rcc N32_CLOCK_OPAMP>;
+			status = "disabled";
+		};
+		opamp4: opamp@40002030 {
+			compatible = "nsing,n32-opamp";
+			reg = <0x40002030 0x10>;
+			clocks = <&rcc N32_CLOCK_OPAMP>;
+			status = "disabled";
+		};
+
 
 /*
 		tsc: tsc@40003400 {

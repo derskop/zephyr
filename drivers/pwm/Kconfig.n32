@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config PWM_N32
+	bool "N32 timer PWM driver"
+	default y
+	depends on DT_HAS_NSING_N32_PWM_ENABLED
+	select USE_NSING_TIM
+	select PINCTRL
+	help
+	  Enable PWM output using the general-purpose and advanced N32 timers.
