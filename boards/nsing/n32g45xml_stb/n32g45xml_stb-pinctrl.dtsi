@@ -107,6 +107,37 @@
 		slew-rate = "50mhz";
 	};
 
+	/* SDIO, default mapping (D0..D3=PC8..PC11, CK=PC12, CMD=PD2) */
+	sdio_d0_pc8: sdio_d0_pc8 {
+		pinmux = <N32G45X_PINMUX('C', 8, ALTERNATE, SDIO_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	sdio_d1_pc9: sdio_d1_pc9 {
+		pinmux = <N32G45X_PINMUX('C', 9, ALTERNATE, SDIO_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	sdio_d2_pc10: sdio_d2_pc10 {
+		pinmux = <N32G45X_PINMUX('C', 10, ALTERNATE, SDIO_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	sdio_d3_pc11: sdio_d3_pc11 {
+		pinmux = <N32G45X_PINMUX('C', 11, ALTERNATE, SDIO_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	sdio_ck_pc12: sdio_ck_pc12 {
+		pinmux = <N32G45X_PINMUX('C', 12, ALTERNATE, SDIO_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	sdio_cmd_pd2: sdio_cmd_pd2 {
+		pinmux = <N32G45X_PINMUX('D', 2, ALTERNATE, SDIO_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
 	/* TIM3 PWM, default mapping (TIM3_REMAP0):
 	 *   CH1 = PA6, CH2 = PA7, CH3 = PB0, CH4 = PB1.
 	 * PA6/PA7 are occupied by SPI1 (MISO/MOSI), so only the free

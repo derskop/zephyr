@@ -1,0 +1,16 @@
+# N32 SDIO configuration options
+
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+config SDHC_N32
+	bool "Nations Technologies N32 SDIO host controller driver"
+	default y
+	depends on DT_HAS_NSING_N32_SDIO_ENABLED
+	select PINCTRL
+	select SDHC_SUPPORTS_NATIVE_MODE
+	help
+	  Enable the Nations Technologies N32 SDIO host controller driver. The
+	  controller supports native SD operation with one-bit and four-bit bus
+	  widths at 3.3 V. The initial implementation uses programmed I/O (PIO);
+	  DMA is not enabled.
