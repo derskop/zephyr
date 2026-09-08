@@ -8,6 +8,6 @@ config UART_N32
 	depends on SOC_FAMILY_NSING_N32
 	select SERIAL_HAS_DRIVER
 	select USE_NSING_USART
-   # select SERIAL_SUPPORT_INTERRUPT
+	select SERIAL_SUPPORT_INTERRUPT
 	help
 	  This option enables the UART driver for N32 family of processors.
