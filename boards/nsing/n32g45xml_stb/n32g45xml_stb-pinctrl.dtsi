@@ -14,7 +14,7 @@
 	};
 
 	usart1_rx_pa10: usart1_rx_pa10 {
-		pinmux = <N32G45X_PINMUX('A', 10, GPIO_IN, NO_REMAP)>;
+		pinmux = <N32G45X_PINMUX('A', 10, GPIO_IN, USART1_REMAP0)>;
 		bias-pull-up;
 	};
 

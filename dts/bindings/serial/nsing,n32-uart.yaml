@@ -5,7 +5,7 @@ description: Nations Technologies N32 UART/USART
 
 compatible: "nsing,n32-uart"
 
-include: [base.yaml, pinctrl-device.yaml]
+include: [uart-controller.yaml, pinctrl-device.yaml]
 
 properties:
   reg:

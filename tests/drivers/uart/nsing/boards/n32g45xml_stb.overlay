@@ -1,0 +1,84 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+
+/ {
+	chosen {
+		/* Keep console traffic off the two UARTs under test. */
+		zephyr,console = &usart3;
+		zephyr,uart-test = &usart1;
+		zephyr,uart-peer = &usart2;
+	};
+};
+
+/* Test-only pin definitions. The board default keeps only USART1 TX/RX. */
+&pinctrl {
+	usart1_cts_pa11: usart1_cts_pa11 {
+		pinmux = <N32G45X_PINMUX('A', 11, GPIO_IN, USART1_REMAP0)>;
+		bias-pull-up;
+	};
+
+	usart1_rts_pa12: usart1_rts_pa12 {
+		pinmux = <N32G45X_PINMUX('A', 12, ALTERNATE, USART1_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	usart2_tx_pa2: usart2_tx_pa2 {
+		pinmux = <N32G45X_PINMUX('A', 2, ALTERNATE, USART2_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	usart2_rx_pa3: usart2_rx_pa3 {
+		pinmux = <N32G45X_PINMUX('A', 3, GPIO_IN, USART2_REMAP0)>;
+		bias-pull-up;
+	};
+
+	usart2_cts_pa0: usart2_cts_pa0 {
+		pinmux = <N32G45X_PINMUX('A', 0, GPIO_IN, USART2_REMAP0)>;
+		bias-pull-up;
+	};
+
+	usart2_rts_pa1: usart2_rts_pa1 {
+		pinmux = <N32G45X_PINMUX('A', 1, ALTERNATE, USART2_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	/* USART3 is a test-log console only. It must not share a wire with
+	 * USART1/USART2, whose received data is checked byte-for-byte. */
+	usart3_tx_pb10: usart3_tx_pb10 {
+		pinmux = <N32G45X_PINMUX('B', 10, ALTERNATE, USART3_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	usart3_rx_pb11: usart3_rx_pb11 {
+		pinmux = <N32G45X_PINMUX('B', 11, GPIO_IN, USART3_REMAP0)>;
+		bias-pull-up;
+	};
+};
+
+&usart3 {
+	pinctrl-0 = <&usart3_tx_pb10 &usart3_rx_pb11>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&usart2 {
+	pinctrl-0 = <&usart2_tx_pa2 &usart2_rx_pa3
+		     &usart2_cts_pa0 &usart2_rts_pa1>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&usart1 {
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10
+		     &usart1_cts_pa11 &usart1_rts_pa12>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+/* CAN1 uses PA11/PA12 on the board default DTS; reserve them here for
+ * USART1 CTS/RTS during this UART-only hardware-flow-control test. */
+&can1 {
+	status = "disabled";
+};

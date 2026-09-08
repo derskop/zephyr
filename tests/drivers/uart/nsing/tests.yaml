@@ -1,0 +1,16 @@
+# Copyright (c) 2026 Nations Technologies Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+tests:
+  drivers.uart.nsing:
+    tags:
+      - drivers
+      - uart
+    platform_allow: n32g45xml_stb
+    vendor_allow:
+      - nsing
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "PROJECT EXECUTION SUCCESSFUL"
