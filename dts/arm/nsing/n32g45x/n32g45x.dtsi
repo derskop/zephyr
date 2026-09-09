@@ -652,6 +652,22 @@
 		};
 */
 
+		/* USB FS device controller.  Shares the PMA SRAM (0x40006000)
+		 * and the interrupt line with CAN1; the two must not be used
+		 * at the same time.
+		 */
+		usb: usb@40005c00 {
+			compatible = "nsing,n32-usb";
+			reg = <0x40005c00 0x400>;
+			interrupts = <20 0>;
+			interrupt-names = "usb";
+			num-bidir-endpoints = <8>;
+			ram-size = <512>;
+			maximum-speed = "full-speed";
+			status = "disabled";
+			clocks = <&rcc N32_CLOCK_USB>;
+		};
+
 		can1: can@40006400 {
 			compatible = "nsing,n32-bxcan";
 			reg = <0x40006400 0x400>;
