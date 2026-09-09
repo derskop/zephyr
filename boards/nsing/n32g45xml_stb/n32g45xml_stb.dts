@@ -149,3 +149,10 @@
 		status = "okay";
 	};
 };
+
+&usb {
+	status = "okay";
+};
+
+zephyr_udc0: &usb {
+};
