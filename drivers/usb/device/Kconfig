@@ -203,6 +203,15 @@ config USB_DC_IT82XX2
 	help
 	  ITE IT82XX2 USB Device Controller Driver
 
+config USB_DC_N32
+	bool "USB device controller driver for N32G45x devices"
+	default y
+	depends on DT_HAS_NSING_N32_USB_ENABLED
+	select CLOCK_CTRL_N32
+	imply USB_DEVICE_REMOTE_WAKEUP
+	help
+	  Enable the complex N32G45x USB FS device controller driver.
+
 config USB_DC_NUMAKER
 	bool "Nuvoton NuMaker USB 1.1 device controller"
 	default y
