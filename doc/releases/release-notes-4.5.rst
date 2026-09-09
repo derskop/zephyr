@@ -1814,6 +1814,7 @@ New Drivers
   * :dtcompatible:`infineon,usbhs` (:github:`106841`)
   * :dtcompatible:`microchip,udphs-g1-udc` (:github:`99620`)
   * :dtcompatible:`nordic,nrf-usbhs-bc12` (:github:`106759`)
+  * Nations Technologies N32 USB FS device controller (:dtcompatible:`nsing,n32-usb`).
 
 * Wakeup Controller
 
