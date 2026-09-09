@@ -626,6 +626,11 @@ New Drivers
 
   * Analog Devices ADXL313 3-axis accelerometer (:dtcompatible:`adi,adxl313`).
 
+* USB
+
+  * Nations Technologies N32 USB FS device controller
+    (:dtcompatible:`nsing,n32-usb`).
+
 * Clock Monitor
 
   * :dtcompatible:`nxp,cmu-fc` — NXP Clock Monitoring Unit (Frequency Check)
