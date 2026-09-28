@@ -44,8 +44,6 @@ properties:
     required: true
   clocks:
     required: true
-  interrupts:
-    required: false
 
   positive-input:
     type: string
