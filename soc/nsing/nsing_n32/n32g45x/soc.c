@@ -1,6 +1,5 @@
 /*
- *
- *
+ * Copyright (c) 2024 Nations Technologies
  * SPDX-License-Identifier: Apache-2.0
  */
 
@@ -22,5 +21,5 @@ void soc_early_init_hook(void)
 {
 	/* Update CMSIS SystemCoreClock variable (HCLK) */
 	/* At reset, system core clock is set to 8 MHz from HSI */
-    SystemInit();
+	SystemInit();
 }

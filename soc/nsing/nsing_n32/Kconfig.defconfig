@@ -10,5 +10,4 @@ if SOC_FAMILY_NSING_N32
 # 家族级默认值可在其后覆盖
 rsource "*/Kconfig.defconfig"
 
-
 endif # SOC_FAMILY_NSING_N32
