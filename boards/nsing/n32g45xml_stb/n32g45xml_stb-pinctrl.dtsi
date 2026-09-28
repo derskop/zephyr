@@ -107,6 +107,55 @@
 		slew-rate = "50mhz";
 	};
 
+	/* QSPI, default mapping (PA4~PA7 + PC4/PC5).
+	 *
+	 * The NSS pin selects the group: PA4 means remap value 0, which is
+	 * what QSPI_REMAP0 encodes. The other two groups (PC10~PC12 + PD0~PD2,
+	 * PF0~PF5) are QSPI_REMAP2/QSPI_REMAP3; there is no QSPI_REMAP1
+	 * because value 1 is unused.
+	 *
+	 * PA4..PA7 are the same four pins as spi1_sck_pa5 / spi1_miso_pa6 /
+	 * spi1_mosi_pa7 plus the SPI1 chip select on PA4, so a node using this
+	 * group cannot be enabled next to &spi1 and the p25q40ha node that
+	 * hangs off it -- see the comment on &qspi in the board dts.
+	 *
+	 * PC4/PC5 carry IO2/IO3, which are WP# and HOLD# on a P25Q40HA and are
+	 * active low. In 1-1-1 mode the controller does not drive them, and
+	 * with EN cleared it does not drive them either, so they only stay
+	 * deasserted if the board or the application pulls them up. The vendor
+	 * HAL drives them high from software outside quad transfers
+	 * (QSPI_GPIO(..., IO3_Output = true)) for exactly that reason.
+	 */
+	qspi_nss_pa4: qspi_nss_pa4 {
+		pinmux = <N32G45X_PINMUX('A', 4, ALTERNATE, QSPI_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	qspi_sck_pa5: qspi_sck_pa5 {
+		pinmux = <N32G45X_PINMUX('A', 5, ALTERNATE, QSPI_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	qspi_io0_pa6: qspi_io0_pa6 {
+		pinmux = <N32G45X_PINMUX('A', 6, ALTERNATE, QSPI_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	qspi_io1_pa7: qspi_io1_pa7 {
+		pinmux = <N32G45X_PINMUX('A', 7, ALTERNATE, QSPI_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	qspi_io2_pc4: qspi_io2_pc4 {
+		pinmux = <N32G45X_PINMUX('C', 4, ALTERNATE, QSPI_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	qspi_io3_pc5: qspi_io3_pc5 {
+		pinmux = <N32G45X_PINMUX('C', 5, ALTERNATE, QSPI_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
 	/* SDIO, default mapping (D0..D3=PC8..PC11, CK=PC12, CMD=PD2) */
 	sdio_d0_pc8: sdio_d0_pc8 {
 		pinmux = <N32G45X_PINMUX('C', 8, ALTERNATE, SDIO_REMAP0)>;
@@ -142,12 +191,65 @@
 	 *   CH1 = PA6, CH2 = PA7, CH3 = PB0, CH4 = PB1.
 	 * PA6/PA7 are occupied by SPI1 (MISO/MOSI), so only the free
 	 * channels CH3 (PB0) and CH4 (PB1) are exposed for PWM output.
-	 * These are PWM channels 2 and 3 respectively. */
+	 * These are PWM channels 2 and 3 respectively.
+	 */
 	tim3_ch3_pb0: tim3_ch3_pb0 {
 		pinmux = <N32G45X_PINMUX('B', 0, ALTERNATE, TIM3_REMAP0)>;
 	};
 
 	tim3_ch4_pb1: tim3_ch4_pb1 {
 		pinmux = <N32G45X_PINMUX('B', 1, ALTERNATE, TIM3_REMAP0)>;
+	};
+
+	/* I2S2, default mapping (WS=PB12, CK=PB13, SD=PB15).
+	 *
+	 * Same three pins as SPI2 above; the difference is the extra NSS
+	 * remap for the frame clock, which the SPI driver never configures.
+	 *
+	 * These pins are claimed by other peripherals on this board, so a
+	 * node using this group cannot be enabled alongside them:
+	 *   - PB12/PB13 are CAN2 (can2_rx_pb12 / can2_tx_pb13)
+	 *   - PB15 is SPI2's MOSI, and SPI2 is the same hardware block as
+	 *     I2S2, so &spi2 has to be disabled as well.
+	 * All three are configured as alternate-function push-pull, which is
+	 * what the vendor I2S examples do for both the controller and the
+	 * target.
+	 */
+	i2s2_ws_pb12: i2s2_ws_pb12 {
+		pinmux = <N32G45X_PINMUX('B', 12, ALTERNATE, SPI2_NSS_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	i2s2_ck_pb13: i2s2_ck_pb13 {
+		pinmux = <N32G45X_PINMUX('B', 13, ALTERNATE, SPI2_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	i2s2_sd_pb15: i2s2_sd_pb15 {
+		pinmux = <N32G45X_PINMUX('B', 15, ALTERNATE, SPI2_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	/* I2S3, default mapping (WS=PA15, CK=PB3, SD=PB5).
+	 *
+	 * PA15 and PB3 are JTAG-dedicated pins at reset, so an instance using
+	 * this group also needs the nsing,jtag-port-release property: it
+	 * clears AFIO->RMP_CFG.SWJ_CFG to 010, which frees those pins while
+	 * keeping the SW-DP enabled. PB5 is the red LED (led2), so a node
+	 * using this group conflicts with the gpio-leds node.
+	 */
+	i2s3_ws_pa15: i2s3_ws_pa15 {
+		pinmux = <N32G45X_PINMUX('A', 15, ALTERNATE, SPI3_NSS_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	i2s3_ck_pb3: i2s3_ck_pb3 {
+		pinmux = <N32G45X_PINMUX('B', 3, ALTERNATE, SPI3_REMAP0)>;
+		slew-rate = "50mhz";
+	};
+
+	i2s3_sd_pb5: i2s3_sd_pb5 {
+		pinmux = <N32G45X_PINMUX('B', 5, ALTERNATE, SPI3_REMAP0)>;
+		slew-rate = "50mhz";
 	};
 };

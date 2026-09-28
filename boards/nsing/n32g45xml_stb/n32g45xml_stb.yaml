@@ -11,10 +11,13 @@ flash: 512
 supported:
   - can
   - comparator
+  - dma
   - gpio
   - i2c
+  - i2s
+  - mspi
   - opamp
-  - spi
   - sdhc
+  - spi
   - uart
 vendor: nsing
