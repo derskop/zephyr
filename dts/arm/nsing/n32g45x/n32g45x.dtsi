@@ -20,6 +20,7 @@
 #include <zephyr/dt-bindings/gpio/gpio.h>
 #include <zephyr/dt-bindings/i2c/i2c.h>
 #include <zephyr/dt-bindings/clock/n32_clock.h>
+#include <zephyr/dt-bindings/dma/n32_dma.h>
 #include <zephyr/dt-bindings/reset/n32g45x-reset.h>
 
 / {
@@ -303,6 +304,37 @@
 			status = "disabled";
 		};
 
+		/*
+		 * The I2S blocks are the same hardware as spi2/spi3 in I2S mode,
+		 * so these deliberately share their unit addresses: a board
+		 * enables one node of a given instance or the other, never both.
+		 * SPI1 has no I2S mode.
+		 *
+		 * The DMA request cell is 0, which leaves each channel on its
+		 * hardwired mapping -- what the vendor examples rely on. The
+		 * channel cell is 0-based, so dma1 channels 3 and 4 are the
+		 * vendor's DMA1_CH4 and DMA1_CH5.
+		 */
+		i2s2: i2s@40003800 {
+			compatible = "nsing,n32-i2s";
+			reg = <0x40003800 0x400>;
+			clocks = <&rcc N32_CLOCK_SPI2>;
+			interrupts = <36 0>;
+			dmas = <&dma1 3 0 0>, <&dma1 4 0 0>;
+			dma-names = "rx", "tx";
+			status = "disabled";
+		};
+
+		i2s3: i2s@40003c00 {
+			compatible = "nsing,n32-i2s";
+			reg = <0x40003c00 0x400>;
+			clocks = <&rcc N32_CLOCK_SPI3>;
+			interrupts = <51 0>;
+			dmas = <&dma2 0 0 0>, <&dma2 1 0 0>;
+			dma-names = "rx", "tx";
+			status = "disabled";
+		};
+
 		adc1: adc@40020800 {
 			compatible = "nsing,n32-adc";
 			reg = <0x40020800 0x400>;
@@ -437,29 +469,30 @@
 			pwm8: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
 		};
 
-		/* ---- DMA（需补 binding nsing,n32-dma） ---- */
-
-/*
+		/* Interrupt order is channel order: the driver connects IRQ_BY_IDX(n)
+		 * to channel n.
+		 */
 		dma1: dma@40020000 {
-			compatible = "nsing,n32-dma";	
+			compatible = "nsing,n32-dma";
 			reg = <0x40020000 0x400>;
 			clocks = <&rcc N32_CLOCK_DMA1>;
-			
 			interrupts = <11 0>, <12 0>, <13 0>, <14 0>, <15 0>, <16 0>, <17 0>, <76 0>;
+			#dma-cells = <3>;
+			dma-channels = <8>;
+			nsing,mem2mem;
 			status = "disabled";
 		};
-*/
 
-/*
 		dma2: dma@40020400 {
-			compatible = "nsing,n32-dma";	
+			compatible = "nsing,n32-dma";
 			reg = <0x40020400 0x400>;
 			clocks = <&rcc N32_CLOCK_DMA2>;
-			
 			interrupts = <56 0>, <57 0>, <58 0>, <59 0>, <60 0>, <68 0>, <69 0>, <77 0>;
+			#dma-cells = <3>;
+			dma-channels = <8>;
+			nsing,mem2mem;
 			status = "disabled";
 		};
-*/
 
 		rtc: rtc@40002800 {
 			compatible = "nsing,n32-rtc";
@@ -502,15 +535,32 @@
 		};
 */
 
-/*
+		/*
+		 * The transmit channel only. The driver hands a packet that is
+		 * longer than the FIFO to it, because a frame pushed by the CPU
+		 * costs more time than one the core shifts; the receive side
+		 * needs no channel.
+		 *
+		 * The request cell is not optional here, unlike the SPI/I2S nodes
+		 * above whose channels do have a hardwired request. Nothing on
+		 * this part drives a DMA request from the QSPI unless it is
+		 * remapped, so a zero in that cell leaves the channel triggered by
+		 * whatever else its default mapping carries -- which is what the
+		 * vendor examples avoid by asking for the same code explicitly.
+		 * The channel is then a channel like any other: CHSEL and the
+		 * controller wide CHMAPEN bit are what route the request, so seven
+		 * is only a nod to the vendor, which transmits on DMA2_CH7.
+		 */
 		qspi: qspi@a0001000 {
-			compatible = "nsing,n32-qspi";	
+			compatible = "nsing,n32-qspi";
 			reg = <0xa0001000 0x400>;
 			clocks = <&rcc N32_CLOCK_QSPI>;
-			interrupts = <67 0>;
+			dmas = <&dma2 7 N32_DMA2_REQ_QSPI_TX 0>;
+			dma-names = "tx";
+			#address-cells = <1>;
+			#size-cells = <0>;
 			status = "disabled";
 		};
-*/
 
 		iwdg: iwdg@40003000 {
 			compatible = "nsing,n32-iwdg";
