@@ -1,0 +1,90 @@
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Nations Technologies N32 I2S controller
+
+  The I2S block is the SPI block in I2S mode (I2SCFG.MODSEL), so this node and
+  the nsing,n32-spi node at the same address describe the same hardware: enable
+  one or the other, never both. Only SPI2 and SPI3 have an I2S mode.
+
+  An instance is half duplex. MODCFG selects exactly one of slave-TX, slave-RX,
+  master-TX and master-RX, so an instance can be configured for both directions
+  but cannot run them at the same time. I2S_DIR_BOTH is answered with -ENOSYS,
+  and a board that needs to send and receive simultaneously enables two
+  instances -- for example i2s3 as the controller and i2s2 as the target,
+  cabled together.
+
+  The block has no internal loopback, so I2S_OPT_LOOPBACK is accepted and
+  ignored; a loopback test needs the two instances wired to each other.
+
+  The frame clock prescaler divides SYSCLK with no clock-source mux, and the
+  smallest legal divider is 4, so the lowest reachable frame clock is
+  SYSCLK / (32 * packet_length * 511), where packet_length is 2 for every data
+  format except 16-bits. For 16-bit words the driver selects the
+  16-bits-extended format, which is what keeps 8 kHz reachable on a 144 MHz
+  SYSCLK; see drivers/i2s/i2s_n32.c for the arithmetic.
+
+  Example -- two N32G45x instances cabled to each other, the controller on
+  i2s3. Request cell 0 leaves each channel on its hardwired mapping, which for
+  this SoC is I2S2 on DMA1_CH4/CH5 and I2S3 on DMA2_CH1/CH2 (channel cells are
+  0-based):
+
+    &i2s2 {
+            pinctrl-0 = <&i2s2_ws_pb12 &i2s2_ck_pb13 &i2s2_sd_pb15>;
+            pinctrl-names = "default";
+            dmas = <&dma1 3 0 0>, <&dma1 4 0 0>;
+            dma-names = "rx", "tx";
+            status = "okay";
+    };
+
+    &i2s3 {
+            pinctrl-0 = <&i2s3_ws_pa15 &i2s3_ck_pb3 &i2s3_sd_pb5>;
+            pinctrl-names = "default";
+            dmas = <&dma2 0 0 0>, <&dma2 1 0 0>;
+            dma-names = "rx", "tx";
+            nsing,jtag-port-release;
+            status = "okay";
+    };
+
+compatible: "nsing,n32-i2s"
+
+include: [i2s-controller.yaml, pinctrl-device.yaml]
+
+properties:
+  reg:
+    required: true
+
+  clocks:
+    required: true
+
+  dmas:
+    required: true
+
+  dma-names:
+    required: true
+
+  pinctrl-0:
+    required: true
+
+  pinctrl-names:
+    required: true
+
+  interrupts:
+    description: |
+      Accepted but unused. The driver registers no interrupt service routine:
+      every condition the I2S API can report is already visible at a DMA block
+      boundary (a memory slab that cannot supply the next RX block, or an empty
+      TX queue), and the OVR/UDR status flags are informational only.
+
+  nsing,jtag-port-release:
+    type: boolean
+    description: |
+      Set AFIO->RMP_CFG.SWJ_CFG to 010 during driver init, releasing the
+      JTAG-dedicated pins PA15, PB3 and PB4 for general purpose use while
+      leaving the SW-DP enabled, so SWD flashing and debugging keep working.
+
+      An instance whose pins are JTAG pins needs this; on this SoC that is
+      i2s3, whose WS is PA15 and whose CK is PB3. It cannot be expressed as a
+      pinmux state: SWJ_CFG is a debug-port control rather than a pin function,
+      which is why the N32 pinctrl driver never writes it.

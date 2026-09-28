@@ -1503,6 +1503,12 @@ New Drivers
 
   * Nations Technologies N32 96-bit unique device identifier support.
 
+* I2S
+
+  * Nations Technologies N32 I2S (:dtcompatible:`nsing,n32-i2s`), a
+    register-level driver for the half-duplex SPI/I2S blocks of the N32G45x
+    that moves audio through the on-chip DMA controller.
+
 * Input
 
   * :dtcompatible:`tbs,crsf` (:github:`106941`)
