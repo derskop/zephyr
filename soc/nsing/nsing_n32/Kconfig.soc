@@ -6,9 +6,10 @@
 # 家族符号：Nations N32 全家族（N32G45x / N32H78x 等）
 config SOC_FAMILY_NSING_N32
 	bool
-	select HAS_NSING_HAL
-	select PINCTRL
-	select BUILD_OUTPUT_HEX
+
+# 能力 select（HAS_NSING_HAL / PINCTRL / BUILD_OUTPUT_HEX）放在同目录的
+# Kconfig 里，不放这里：Kconfig.soc 会被 HWMv2 / sysbuild 的 Kconfig 树
+# 单独解析，那两棵树里看不到驱动和 Kconfig.zephyr 的符号，会报未定义。
 
 # 家族字符串：对应目录 soc/nsing/
 config SOC_FAMILY

@@ -5,6 +5,8 @@
 
 # 家族符号：Nations N32 全家族（N32G45x / N32H78x 等）
 config SOC_FAMILY_NSING_N32
+	select HAS_NSING_HAL
+	select PINCTRL
 	select BUILD_OUTPUT_HEX
 
 if SOC_FAMILY_NSING_N32

@@ -17,6 +17,6 @@ config SOC_N32G457MEL
 	bool
 	select SOC_SERIES_N32G45X
 
-# 芯片字符串
+# 芯片字符串，必须与 soc/nsing/nsing_n32/soc.yml 里的 soc name 一致
 config SOC
-	default "n32g45x" if SOC_N32G457MEL
+	default "n32g457" if SOC_N32G457MEL
