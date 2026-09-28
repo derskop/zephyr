@@ -1,0 +1,67 @@
+/*
+ * Copyright (c) 2024 Nations Technologies
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
+ * The i2s_api suite needs two I2S instances cabled to each other, one driving
+ * the clocks and one following them. The board devicetree carries the nodes,
+ * their pinctrl and their wiring; this overlay only turns them on and settles
+ * the pin conflicts, which is the part that is specific to this application.
+ *
+ *   CK  PB3  (i2s3) <-> PB13 (i2s2)
+ *   WS  PA15 (i2s3) <-> PB12 (i2s2)
+ *   SD  PB5  (i2s3) <-> PB15 (i2s2)
+ *
+ * i2s-node0 is the target and i2s-node1 the controller, which is the order
+ * i2s_api_test.h expects.
+ *
+ * Those pins are claimed by other peripherals the board enables, and the CAN
+ * and SPI samples still need them, so the conflicts are resolved here instead
+ * of in the board file. i2s2 and spi2 are the same hardware block, so spi2 has
+ * to go as well.
+ */
+
+/*
+ * PB5 is the red LED. Deleting the node is not the same as disabling it:
+ * led_gpio_init() walks every child of the gpio-leds node with
+ * DT_INST_FOREACH_CHILD, not ..._CHILD_STATUS_OKAY, so a disabled red_led
+ * would still have PB5 reconfigured as a plain GPIO output and i2s3 would
+ * drive nothing. Deleting it strands the led2 alias in the board file, so
+ * that goes too.
+ */
+/delete-node/ &red_led;
+
+/ {
+	aliases {
+		/delete-property/ led2;
+		i2s-node0 = &i2s2;
+		i2s-node1 = &i2s3;
+	};
+};
+
+&can2 {
+	/* PB12 and PB13 go to i2s2. */
+	status = "disabled";
+};
+
+&spi2 {
+	/* The same register block as i2s2, selected as SPI rather than I2S. */
+	status = "disabled";
+};
+
+&dma1 {
+	status = "okay";
+};
+
+&dma2 {
+	status = "okay";
+};
+
+&i2s2 {
+	status = "okay";
+};
+
+&i2s3 {
+	status = "okay";
+};

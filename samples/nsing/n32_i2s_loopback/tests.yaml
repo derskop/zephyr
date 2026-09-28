@@ -1,0 +1,19 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+sample:
+  name: N32G45x I2S loopback
+
+tests:
+  sample.nsing.i2s.loopback:
+    build_only: true
+    tags:
+      - drivers
+      - i2s
+    depends_on:
+      - i2s
+    platform_allow:
+      - n32g45xml_stb
+    vendor_allow:
+      - nsing
+    timeout: 60

@@ -1,0 +1,39 @@
+# Copyright (c) 2024 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig I2S_N32
+	bool "Nations N32 I2S driver"
+	default y
+	depends on DT_HAS_NSING_N32_I2S_ENABLED
+	select DMA
+	select PINCTRL
+	select USE_NSING_SPI
+	help
+	  Enable I2S support on the Nations Technologies N32G45x SoC family.
+
+	  The I2S block is the SPI block in I2S mode, so a given instance serves
+	  either this driver or the SPI driver, never both. Both halves of the
+	  vendor HAL live in n32g45x_spi.c, which is why USE_NSING_SPI is
+	  selected here as well.
+
+if I2S_N32
+
+config I2S_N32_RX_BLOCK_COUNT
+	int "RX queue length"
+	default 4
+	help
+	  Depth of the driver's receive queue, counted in DMA blocks. Each
+	  queued block is cfg.block_size bytes taken from the application's
+	  memory slab, so the slab should hold at least this many blocks. A
+	  block that completes with the queue already full is reported as an
+	  overrun (ERROR state).
+
+config I2S_N32_TX_BLOCK_COUNT
+	int "TX queue length"
+	default 4
+	help
+	  Depth of the driver's transmit queue, counted in DMA blocks. The
+	  driver does not allocate these: they are the blocks the application
+	  passes to i2s_write().
+
+endif # I2S_N32
