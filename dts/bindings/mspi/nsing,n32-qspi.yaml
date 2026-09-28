@@ -1,0 +1,31 @@
+# Copyright (c) 2024 Nations Technologies Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Nations Technologies N32 quad-SPI controller.
+
+  The block is a Synopsys DesignWare SSI with an XIP extension, which is why the
+  driver follows the DesignWare register sequence rather than the vendor HAL's.
+
+  Only the register interface is described here. The XIP aperture at 0x90000000
+  is not, because the core has no XIP write register file on this SoC and the
+  driver does not implement memory mapped access yet; a node that wants to add
+  it can list the window as a second reg entry.
+
+compatible: "nsing,n32-qspi"
+
+include: [mspi-controller.yaml, pinctrl-device.yaml]
+
+properties:
+  reg:
+    required: true
+
+  clocks:
+    required: true
+
+  packet-data-limit:
+    description: |
+      Frame counts are held in a 16-bit register field, so the driver rejects a
+      packet whose payload plus the instruction and address phases come to more
+      than 65536 frames. Declaring a smaller limit here makes flash_mspi_nor.c
+      split longer reads into several packets instead.

@@ -1,0 +1,20 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+sample:
+  name: N32G45x QSPI flash
+tests:
+  sample.nsing.qspi.flash:
+    # The test erases sectors of a flash that a CI machine does not have; it
+    # is built here and run by hand on the board.
+    build_only: true
+    tags:
+      - drivers
+      - mspi
+    depends_on:
+      - mspi
+    platform_allow:
+      - n32g45xml_stb
+    vendor_allow:
+      - nsing
+    timeout: 60

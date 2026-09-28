@@ -1,0 +1,52 @@
+/*
+ * Copyright (c) 2026
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/*
+ * The QSPI controller and the SPI1 controller are wired to the same P25Q40HA on
+ * this board, over the same four pins: PA4 is SPI1's chip select and PA5/PA6/PA7
+ * are its SCK/MISO/MOSI, while for QSPI those four are NSS/SCK/IO0/IO1. The
+ * board devicetree carries both nodes, their pin control and the flash node
+ * under each, disabled; this overlay settles the choice and nothing else.
+ *
+ * PC4/PC5 (QSPI IO2/IO3) are unused on this board and need no conflict
+ * resolution, but they are WP# and HOLD# on the flash and are only deasserted
+ * because they are pulled up. Nothing here drives them: the controller drives
+ * them for the duration of a quad transfer and tristates them outside it.
+ *
+ * That the flash is left enabled on the SPI1 side would be a problem rather
+ * than a nuisance: the SPI flash driver builds a device for every enabled
+ * node with that compatible, whether or not its bus is enabled, and the
+ * resulting device would have no bus to talk to.
+ */
+&spi1 {
+	status = "disabled";
+};
+
+&p25q40ha {
+	status = "disabled";
+};
+
+&qspi {
+	status = "okay";
+};
+
+/*
+ * The controller's transmit DMA channel lives on DMA2, which the SoC devicetree
+ * leaves disabled along with every other controller on the board. Without it
+ * the driver can still read, but a page program is longer than its FIFO and
+ * there is no way for the CPU to feed one -- see the note on CONFIG_MSPI_N32.
+ */
+&dma2 {
+	status = "okay";
+};
+
+/*
+ * The flash node under qspi stays disabled -- the sample drives the controller
+ * through the MSPI API instead, and leaving it enabled would hand the same
+ * device to the flash layer, which would probe it during driver
+ * initialisation, before main() runs. It is here for its devicetree reg
+ * property, which is what becomes the device index the sample passes to
+ * mspi_dev_config().
+ */
