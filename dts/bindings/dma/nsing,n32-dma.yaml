@@ -1,16 +1,79 @@
 # Copyright (c) 2024 Nations Technologies
 # SPDX-License-Identifier: Apache-2.0
 
-description: Nations Technologies N32 DMA controller
+description: |
+  Nations Technologies N32 DMA controller
+
+  channel: Select channel for data transmitting
+
+  request: Peripheral request selector, written to the channel's CHSEL
+    register. Use one of the N32_DMA1_REQ_* / N32_DMA2_REQ_* macros from
+    include/zephyr/dt-bindings/dma/n32_dma.h, or 0 to leave the channel on its
+    hardwired default mapping.
+
+    The hardware remaps requests through a per-channel CHSEL register gated by
+    a single controller-wide CHMAPEN bit. Programming CHSEL for one channel
+    therefore changes how every other channel of the same controller is
+    decoded, so a controller cannot mix channels left on the default mapping
+    (request 0) with channels carrying an explicit request code. dma_config()
+    returns -EINVAL if it is asked to.
+
+    Note that N32_DMA1_REQ_ADC1 and N32_DMA2_REQ_TIM5_CH4 are 0x00, the same
+    value as "use the default mapping", so those two requests cannot be
+    remapped onto another channel.
+
+  config: A bitmask of static channel configuration, built from the
+    N32_DMA_CH_CFG_* macros in include/zephyr/dt-bindings/dma/n32_dma.h —
+    for example N32_DMA_CH_CFG_PRIORITY(N32_DMA_PRIORITY_HIGH).
+    Direction, data widths and address incrementation are driven by the
+    runtime fields of struct dma_config and are ignored if set here; the cell
+    exists for the settings the runtime struct cannot express, mainly channel
+    priority. A consumer typically decodes it like:
+
+      dma_cfg.channel_priority =
+          N32_DMA_CH_CFG_PRIORITY_GET(DT_INST_DMAS_CELL_BY_NAME(idx, tx, config));
+
+    Pass 0 to leave priority at its default.
+
+  Example of devicetree configuration
+
+  &spi2 {
+        dmas = <&dma1 3 N32_DMA1_REQ_SPI_I2S2_RX
+                       N32_DMA_CH_CFG_PRIORITY(N32_DMA_PRIORITY_HIGH)>,
+               <&dma1 4 N32_DMA1_REQ_SPI_I2S2_TX
+                       N32_DMA_CH_CFG_PRIORITY(N32_DMA_PRIORITY_HIGH)>;
+        dma-names = "rx", "tx";
+  };
+
+  "spi2" receives on dma1 channel 3 and transmits on dma1 channel 4, both
+  remapped to the SPI2/I2S2 request, both at high priority. Both cells need
+  <zephyr/dt-bindings/dma/n32_dma.h> to be included by the file using them.
 
 compatible: "nsing,n32-dma"
 
-include: [base.yaml]
+include: [dma-controller.yaml]
 
 properties:
   reg:
     required: true
+
   clocks:
     required: true
+
   interrupts:
     required: true
+
+  dma-channels:
+    required: true
+
+  nsing,mem2mem:
+    type: boolean
+    description: The DMA controller supports memory to memory transfer
+
+  "#dma-cells":
+    const: 3
+
+dma-cells:
+  - channel
+  - request
+  - config
