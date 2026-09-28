@@ -10,7 +10,7 @@ N32G45x COMP / OPAMP J-Link 自动测试
 
 * ``comp1``: 正端 PA1 vs 负端 VREF1（内部 64 级定标器），NVIC IRQ 82
   - 校验：EN / INPSEL=PA1 / INMSEL=VREF1 / VREF1 定标器使能
-  - API：``comparator_get_output`` / ``comparator_set_trigger``(NONE、RISING)
+  - API：``comparator_get_output`` / ``comparator_set_trigger``\ (NONE、RISING)
 * ``opamp1``: 非反向内部 PGA，输入 PA1；运行期 ``opamp_set_gain(x4)``
   - 校验：EN / MOD=PGA / VMSEL=浮空 / PGAGAN=x4
 * ``opamp4``: 内部跟随器，输入 PC3

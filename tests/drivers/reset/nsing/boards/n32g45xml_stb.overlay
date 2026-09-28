@@ -1,4 +1,7 @@
 /*
+ * Copyright (c) 2026 Nations Technologies
+ * SPDX-License-Identifier: Apache-2.0
+ *
  * Use USART1's default PA9/PA10 mapping for hardware-test output.
  */
 

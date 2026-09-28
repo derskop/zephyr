@@ -1,4 +1,7 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/*
+ * Copyright (c) 2026 Nations Technologies
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 / {
 	chosen {
@@ -42,7 +45,8 @@
 	};
 
 	/* USART3 is a test-log console only. It must not share a wire with
-	 * USART1/USART2, whose received data is checked byte-for-byte. */
+	 * USART1/USART2, whose received data is checked byte-for-byte.
+	 */
 	usart3_tx_pb10: usart3_tx_pb10 {
 		pinmux = <N32G45X_PINMUX('B', 10, ALTERNATE, USART3_REMAP0)>;
 		slew-rate = "50mhz";
@@ -78,7 +82,8 @@
 };
 
 /* CAN1 uses PA11/PA12 on the board default DTS; reserve them here for
- * USART1 CTS/RTS during this UART-only hardware-flow-control test. */
+ * USART1 CTS/RTS during this UART-only hardware-flow-control test.
+ */
 &can1 {
 	status = "disabled";
 };
