@@ -1,4 +1,8 @@
-/* SPDX-License-Identifier: Apache-2.0 */
+/*
+ * Copyright (c) 2026 Nations Technologies Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 /dts-v1/;
 #include <nsing/n32g45x/n32g45x.dtsi>
@@ -34,6 +38,9 @@
 		led1 = &blue_led;
 		led2 = &red_led;
 		sdhc0 = &sdio;
+		eeprom-0 = &at24;
+		i2s-tx = &i2s3;
+		i2s-rx = &i2s2;
 	};
 };
 
@@ -73,8 +80,25 @@
 &i2c1 {
 	pinctrl-0 = <&i2c1_scl_pb6 &i2c1_sda_pb7>;
 	pinctrl-names = "default";
-    clock-frequency = <I2C_BITRATE_STANDARD>;
-    status = "okay";
+	clock-frequency = <I2C_BITRATE_STANDARD>;
+
+	scl-gpios = <&gpiob 6 (GPIO_OPEN_DRAIN | GPIO_ACTIVE_HIGH)>;
+	sda-gpios = <&gpiob 7 (GPIO_OPEN_DRAIN | GPIO_ACTIVE_HIGH)>;
+
+	at24: eeprom@50 {
+		compatible = "atmel,at24";
+		reg = <0x50>;
+		size = <512>;
+		pagesize = <16>;
+		address-width = <8>;
+		/* tWR is 5 ms max; the driver re-issues the transfer until the
+		 * slave ACKs again, so leave margin over that.
+		 */
+		timeout = <20>;
+		status = "okay";
+	};
+
+	status = "okay";
 };
 
 &can1 {
@@ -101,12 +125,13 @@
 	status = "okay";
 	cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>;
 
-	w25q128: w25q128@0 {
+	p25q40ha: p25q40ha@0 {
 		compatible = "jedec,spi-nor";
 		reg = <0>;
 		spi-max-frequency = <9000000>;
-		size = <134217728>;
-		jedec-id = [ef 40 18];
+		/* 4 Mbit, in the bits jedec,jesd216.yaml counts capacity in. */
+		size = <4194304>;
+		jedec-id = [85 60 13];
 	};
 };
 
@@ -118,6 +143,81 @@
 
 &spi3 {
 	status = "disabled";
+};
+
+/*
+ * Both I2S instances collide with functions this board already ships:
+ * PB12/PB13 are can2, PB15 is spi2's MOSI, and PB5 is the red LED. The
+ * pinctrl is wired up so an application only has to say status = "okay" and
+ * release the conflicting nodes -- see
+ * tests/drivers/i2s/i2s_api/boards/n32g45xml_stb.overlay.
+ *
+ * They stay disabled here for that reason: enabling them would take the pins
+ * away from the CAN test and the SPI samples.
+ */
+&i2s2 {
+	pinctrl-0 = <&i2s2_ws_pb12 &i2s2_ck_pb13 &i2s2_sd_pb15>;
+	pinctrl-names = "default";
+	status = "disabled";
+};
+
+&i2s3 {
+	pinctrl-0 = <&i2s3_ws_pa15 &i2s3_ck_pb3 &i2s3_sd_pb5>;
+	pinctrl-names = "default";
+	/* WS is PA15 and CK is PB3, which are JTAG pins at reset. */
+	nsing,jtag-port-release;
+	status = "disabled";
+};
+
+/*
+ * The QSPI controller is wired to the same P25Q40HA as &spi1 above, and to the
+ * same four pins: PA4 is SPI1's chip select, and PA5/PA6/PA7 are its
+ * SCK/MISO/MOSI. On QSPI those four are NSS/SCK/IO0/IO1. Only one of the two
+ * controllers can own them, so QSPI stays disabled here and the application
+ * flips both status properties -- see
+ * samples/nsing/n32_qspi_flash/boards/n32g45xml_stb.overlay.
+ *
+ * PC4/PC5 (IO2/IO3) are otherwise unused on this board; they are WP# and HOLD#
+ * on the flash, which are active low and only deassert because the module
+ * pulls them up. See the pin group comment in the pinctrl file.
+ *
+ * The child node is written for the flash device layer route
+ * (CONFIG_FLASH_MSPI_NOR), which is not what the sample above it uses. It is
+ * disabled along with its parent so that a build that enables the flash layer
+ * does not pick up a flash whose controller is switched off. The geometry
+ * comes from the P25Q40HA datasheet rather than from SFDP; a configuration
+ * that turns on CONFIG_FLASH_MSPI_NOR_USE_SFDP has to supply sfdp-bfp instead.
+ *
+ * The part is a 4 Mbit device (512 KiB), not the 128 Mbit one the board is
+ * sold as. The JEDEC ID and the capacity come from the chip's own answer to
+ * command 0x9f -- 85 60 13, Puya's manufacturer code and the capacity code for
+ * 4 Mbit -- read over QSPI by samples/nsing/n32_qspi_flash, not from a
+ * datasheet.
+ *
+ * mspi-io-mode is not optional to the flash layer even though the binding does
+ * not mark it required: the driver expands it without a fallback to build the
+ * default read and write configurations. Single is what every command of every
+ * SPI NOR understands, so it is the only safe value to state before the quad
+ * read has been seen working; a quad configuration belongs in read-io-mode
+ * once samples/nsing/n32_qspi_flash has said which of the two transfer types
+ * this flash accepts.
+ */
+&qspi {
+	pinctrl-0 = <&qspi_nss_pa4 &qspi_sck_pa5 &qspi_io0_pa6 &qspi_io1_pa7
+		     &qspi_io2_pc4 &qspi_io3_pc5>;
+	pinctrl-names = "default";
+	status = "disabled";
+
+	p25q40ha_qspi: p25q40ha@0 {
+		compatible = "jedec,nor";
+		reg = <0>;
+		mspi-max-frequency = <24000000>;
+		mspi-io-mode = "MSPI_IO_MODE_SINGLE";
+		/* Capacity in bits, as jedec,jesd216.yaml defines it. */
+		size = <4194304>;
+		jedec-id = [85 60 13];
+		status = "disabled";
+	};
 };
 
 &sdio {
