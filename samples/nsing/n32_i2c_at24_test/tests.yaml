@@ -1,0 +1,20 @@
+# Copyright (c) 2026
+# SPDX-License-Identifier: Apache-2.0
+
+sample:
+  name: N32G45x I2C AT24 EEPROM test
+
+tests:
+  sample.nsing.i2c.at24:
+    build_only: true
+    tags:
+      - drivers
+      - i2c
+      - eeprom
+    depends_on:
+      - i2c
+    platform_allow:
+      - n32g45xml_stb
+    vendor_allow:
+      - nsing
+    timeout: 60

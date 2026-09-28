@@ -1,3 +1,8 @@
+/*
+ * Copyright (c) 2026 Nations Technologies
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/i2c.h>
