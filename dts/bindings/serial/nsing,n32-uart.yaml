@@ -15,9 +15,7 @@ properties:
     required: true
 
   current-speed:
-  
     type: int
-    required: false
 
   interrupts:
     required: true

@@ -8,10 +8,6 @@
 #include <zephyr/drivers/clock_control.h>
 #include <zephyr/dt-bindings/clock/n32_clock.h>
 
-#define N32_AHB_PRESCALER	CONFIG_CLOCK_N32_AHB_PRESCALER
-#define N32_APB1_PRESCALER	CONFIG_CLOCK_N32_APB1_PRESCALER
-#define N32_APB2_PRESCALER	CONFIG_CLOCK_N32_APB2_PRESCALER
-
 struct n32_pclken {
 	uint32_t bus;
 	uint32_t enr;

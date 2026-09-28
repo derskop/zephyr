@@ -16,7 +16,6 @@ properties:
 
   pinctrl-0:
     type: phandles
-    required: false
     description: |
         GPIO pin configuration for ADC input. The phandles are
         expected to reference pinctrl nodes, e.g.
@@ -27,14 +26,14 @@ properties:
 
   "#io-channel-cells":
     const: 1
-      
+
   pinctrl-names:
-    required: true  
-      
+    required: true
+
   channels:
     type: int
     description: Number of external channels
-    required: true   
+    required: true
 
 io-channel-cells:
-    - input
+  - input
