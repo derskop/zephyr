@@ -1,6 +1,5 @@
-# Copyright (c) 2024
+# Copyright (c) 2024 Nations Technologies
 # SPDX-License-Identifier: Apache-2.0
-
 
 config I2C_N32
 	bool "N32 MCU I2C driver"
@@ -10,3 +9,14 @@ config I2C_N32
 	select USE_NSING_I2C
 	help
 	  Enable I2C support on the N32 family of processors.
+
+config I2C_N32_BUS_RECOVERY
+	bool "Bus recovery support"
+	default y if I2C_BUS_RECOVERY
+	depends on GPIO
+	select I2C_BITBANG
+	help
+	  Recover a bus a slave is holding low by driving SCL by hand for up
+	  to nine cycles, then re-initialising the peripheral. Requires
+	  scl-gpios and sda-gpios in devicetree; without them a stuck bus can
+	  only be cleared by resetting the peripheral.

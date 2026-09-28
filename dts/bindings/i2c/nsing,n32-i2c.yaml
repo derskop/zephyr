@@ -16,3 +16,16 @@ properties:
 
   interrupts:
     required: true
+
+  scl-gpios:
+    type: phandle-array
+    description: |
+      GPIO the I2C SCL signal is routed to. Only needed for bus recovery,
+      which drives SCL by hand to clock a slave that is holding SDA low
+      back to idle. Without it the driver cannot recover a stuck bus.
+
+  sda-gpios:
+    type: phandle-array
+    description: |
+      GPIO the I2C SDA signal is routed to. Only needed for bus recovery,
+      see scl-gpios.
