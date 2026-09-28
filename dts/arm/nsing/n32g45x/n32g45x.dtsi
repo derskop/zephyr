@@ -2,16 +2,19 @@
  * Copyright (c) 2024 Nations Technologies
  * SPDX-License-Identifier: Apache-2.0
  *
- * N32G45x SoC 设备树 —— 按 modules/hal/nsing 外设定义补全。
+ * N32G45x SoC devicetree, written from the peripheral definitions in
+ * modules/hal/nsing.
  *
- * 外设基址 / 中断号均来自 HAL 的 n32g45x.h，时钟位来自 n32_clock.h。
- * 已补全：I2C1~4, SPI1~3, ADC1~4, TIM1~8, DMA1~2, DAC, CAN1~2,
- *         RTC, SDIO, DVP, ETH, QSPI, IWDG, WWDG, BKP, PWR, CRC,
- *         EXTI, COMP, OPAMP, TSC, RCC, FLASH, SRAM, GPIOA~G, USART/UART。
+ * The base addresses and interrupt numbers come from the HAL's n32g45x.h,
+ * the clock bits from n32_clock.h. The following peripherals are described:
+ * I2C1-4, SPI1-3, ADC1-4, TIM1-8, DMA1-2, DAC, CAN1-2, RTC, SDIO, DVP, ETH,
+ * QSPI, IWDG, WWDG, BKP, PWR, CRC, EXTI, COMP, OPAMP, TSC, RCC, FLASH, SRAM,
+ * GPIOA-G and the USART/UART instances.
  *
- * 注意：TIM/DMA/RTC/SDIO/DVP/ETH/QSPI/IWDG/WWDG/BKP/PWR/CRC/EXTI/TSC
- *       等外设暂无 Zephyr 驱动，已用块注释暂时注释掉，后续补驱动再启用。
- * COMP（7 路）与 OPAMP（4 路）驱动见 drivers/comparator 与 drivers/opamp。
+ * TIM, DMA, RTC, SDIO, DVP, ETH, QSPI, IWDG, WWDG, BKP, PWR, CRC, EXTI and
+ * TSC have no Zephyr driver yet, so their nodes are kept in block comments
+ * until one exists. The COMP (7 instances) and OPAMP (4 instances) drivers
+ * live in drivers/comparator and drivers/opamp.
  */
 
 #include <mem.h>
@@ -20,6 +23,7 @@
 #include <zephyr/dt-bindings/gpio/gpio.h>
 #include <zephyr/dt-bindings/i2c/i2c.h>
 #include <zephyr/dt-bindings/clock/n32_clock.h>
+#include <zephyr/dt-bindings/dma/n32_dma.h>
 #include <zephyr/dt-bindings/reset/n32g45x-reset.h>
 
 / {
@@ -303,6 +307,37 @@
 			status = "disabled";
 		};
 
+		/*
+		 * The I2S blocks are the same hardware as spi2/spi3 in I2S mode,
+		 * so these deliberately share their unit addresses: a board
+		 * enables one node of a given instance or the other, never both.
+		 * SPI1 has no I2S mode.
+		 *
+		 * The DMA request cell is 0, which leaves each channel on its
+		 * hardwired mapping -- what the vendor examples rely on. The
+		 * channel cell is 0-based, so dma1 channels 3 and 4 are the
+		 * vendor's DMA1_CH4 and DMA1_CH5.
+		 */
+		i2s2: i2s@40003800 {
+			compatible = "nsing,n32-i2s";
+			reg = <0x40003800 0x400>;
+			clocks = <&rcc N32_CLOCK_SPI2>;
+			interrupts = <36 0>;
+			dmas = <&dma1 3 0 0>, <&dma1 4 0 0>;
+			dma-names = "rx", "tx";
+			status = "disabled";
+		};
+
+		i2s3: i2s@40003c00 {
+			compatible = "nsing,n32-i2s";
+			reg = <0x40003c00 0x400>;
+			clocks = <&rcc N32_CLOCK_SPI3>;
+			interrupts = <51 0>;
+			dmas = <&dma2 0 0 0>, <&dma2 1 0 0>;
+			dma-names = "rx", "tx";
+			status = "disabled";
+		};
+
 		adc1: adc@40020800 {
 			compatible = "nsing,n32-adc";
 			reg = <0x40020800 0x400>;
@@ -364,7 +399,11 @@
 			channels = <4>;
 			advanced;
 			status = "disabled";
-			pwm1: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
+			pwm1: pwm {
+				compatible = "nsing,n32-pwm";
+				#pwm-cells = <3>;
+				status = "disabled";
+			};
 		};
 		tim2: tim@40000000 {
 			compatible = "nsing,n32-tim";
@@ -374,7 +413,11 @@
 			prescaler = <0>;
 			channels = <4>;
 			status = "disabled";
-			pwm2: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
+			pwm2: pwm {
+				compatible = "nsing,n32-pwm";
+				#pwm-cells = <3>;
+				status = "disabled";
+			};
 		};
 		tim3: tim@40000400 {
 			compatible = "nsing,n32-tim";
@@ -384,7 +427,11 @@
 			prescaler = <0>;
 			channels = <4>;
 			status = "disabled";
-			pwm3: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
+			pwm3: pwm {
+				compatible = "nsing,n32-pwm";
+				#pwm-cells = <3>;
+				status = "disabled";
+			};
 		};
 		tim4: tim@40000800 {
 			compatible = "nsing,n32-tim";
@@ -394,7 +441,11 @@
 			prescaler = <0>;
 			channels = <4>;
 			status = "disabled";
-			pwm4: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
+			pwm4: pwm {
+				compatible = "nsing,n32-pwm";
+				#pwm-cells = <3>;
+				status = "disabled";
+			};
 		};
 		tim5: tim@40000c00 {
 			compatible = "nsing,n32-tim";
@@ -404,7 +455,11 @@
 			prescaler = <0>;
 			channels = <4>;
 			status = "disabled";
-			pwm5: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
+			pwm5: pwm {
+				compatible = "nsing,n32-pwm";
+				#pwm-cells = <3>;
+				status = "disabled";
+			};
 		};
 		tim6: tim@40001000 {
 			compatible = "nsing,n32-tim";
@@ -434,32 +489,37 @@
 			channels = <4>;
 			advanced;
 			status = "disabled";
-			pwm8: pwm { compatible = "nsing,n32-pwm"; #pwm-cells = <3>; status = "disabled"; };
+			pwm8: pwm {
+				compatible = "nsing,n32-pwm";
+				#pwm-cells = <3>;
+				status = "disabled";
+			};
 		};
 
-		/* ---- DMA（需补 binding nsing,n32-dma） ---- */
-
-/*
+		/* Interrupt order is channel order: the driver connects IRQ_BY_IDX(n)
+		 * to channel n.
+		 */
 		dma1: dma@40020000 {
 			compatible = "nsing,n32-dma";
 			reg = <0x40020000 0x400>;
 			clocks = <&rcc N32_CLOCK_DMA1>;
-
 			interrupts = <11 0>, <12 0>, <13 0>, <14 0>, <15 0>, <16 0>, <17 0>, <76 0>;
+			#dma-cells = <3>;
+			dma-channels = <8>;
+			nsing,mem2mem;
 			status = "disabled";
 		};
-*/
 
-/*
 		dma2: dma@40020400 {
 			compatible = "nsing,n32-dma";
 			reg = <0x40020400 0x400>;
 			clocks = <&rcc N32_CLOCK_DMA2>;
-
 			interrupts = <56 0>, <57 0>, <58 0>, <59 0>, <60 0>, <68 0>, <69 0>, <77 0>;
+			#dma-cells = <3>;
+			dma-channels = <8>;
+			nsing,mem2mem;
 			status = "disabled";
 		};
-*/
 
 		rtc: rtc@40002800 {
 			compatible = "nsing,n32-rtc";
@@ -472,7 +532,7 @@
 			status = "disabled";
 		};
 
-	/* ---- 其它外设（均需补 binding） ---- */
+	/* ---- Other peripherals, each still needs a binding ---- */
 
 		sdio: sdio@40018000 {
 			compatible = "nsing,n32-sdio";
@@ -483,34 +543,51 @@
 		};
 
 /*
-		dvp: dvp@40014c00 {
-			compatible = "nsing,n32-dvp";
-			reg = <0x40014c00 0x400>;
-			clocks = <&rcc N32_CLOCK_DVP>;
-			interrupts = <78 0>;
-			status = "disabled";
-		};
-*/
+ *         dvp: dvp@40014c00 {
+ *             compatible = "nsing,n32-dvp";
+ *             reg = <0x40014c00 0x400>;
+ *             clocks = <&rcc N32_CLOCK_DVP>;
+ *             interrupts = <78 0>;
+ *             status = "disabled";
+ *         };
+ */
 
 /*
-		eth: eth@40028000 {
-			compatible = "nsing,n32-eth";
-			reg = <0x40028000 0x400>;
-			clocks = <&rcc N32_CLOCK_ETH>;
-			interrupts = <61 0>;
-			status = "disabled";
-		};
-*/
+ *         eth: eth@40028000 {
+ *             compatible = "nsing,n32-eth";
+ *             reg = <0x40028000 0x400>;
+ *             clocks = <&rcc N32_CLOCK_ETH>;
+ *             interrupts = <61 0>;
+ *             status = "disabled";
+ *         };
+ */
 
-/*
+		/*
+		 * The transmit channel only. The driver hands a packet that is
+		 * longer than the FIFO to it, because a frame pushed by the CPU
+		 * costs more time than one the core shifts; the receive side
+		 * needs no channel.
+		 *
+		 * The request cell is not optional here, unlike the SPI/I2S nodes
+		 * above whose channels do have a hardwired request. Nothing on
+		 * this part drives a DMA request from the QSPI unless it is
+		 * remapped, so a zero in that cell leaves the channel triggered by
+		 * whatever else its default mapping carries -- which is what the
+		 * vendor examples avoid by asking for the same code explicitly.
+		 * The channel is then a channel like any other: CHSEL and the
+		 * controller wide CHMAPEN bit are what route the request, so seven
+		 * is only a nod to the vendor, which transmits on DMA2_CH7.
+		 */
 		qspi: qspi@a0001000 {
 			compatible = "nsing,n32-qspi";
 			reg = <0xa0001000 0x400>;
 			clocks = <&rcc N32_CLOCK_QSPI>;
-			interrupts = <67 0>;
+			dmas = <&dma2 7 N32_DMA2_REQ_QSPI_TX 0>;
+			dma-names = "tx";
+			#address-cells = <1>;
+			#size-cells = <0>;
 			status = "disabled";
 		};
-*/
 
 		iwdg: iwdg@40003000 {
 			compatible = "nsing,n32-iwdg";
@@ -527,22 +604,22 @@
 		};
 
 /*
-		bkp: bkp@40006c00 {
-			compatible = "nsing,n32-bkp";
-			reg = <0x40006c00 0x400>;
-			clocks = <&rcc N32_CLOCK_BKP>;
-			status = "disabled";
-		};
-*/
+ *         bkp: bkp@40006c00 {
+ *             compatible = "nsing,n32-bkp";
+ *             reg = <0x40006c00 0x400>;
+ *             clocks = <&rcc N32_CLOCK_BKP>;
+ *             status = "disabled";
+ *         };
+ */
 
 /*
-		pwr: pwr@40007000 {
-			compatible = "nsing,n32-pwr";
-			reg = <0x40007000 0x400>;
-			clocks = <&rcc N32_CLOCK_PWR>;
-			status = "disabled";
-		};
-*/
+ *         pwr: pwr@40007000 {
+ *             compatible = "nsing,n32-pwr";
+ *             reg = <0x40007000 0x400>;
+ *             clocks = <&rcc N32_CLOCK_PWR>;
+ *             status = "disabled";
+ *         };
+ */
 
 	crc: crc@40023000 {
 		compatible = "nsing,n32-crc";
@@ -551,7 +628,7 @@
 		status = "disabled";
 	};
 
-		/* EXTI 与 AFIO 共用时钟，直接挂在 APB2 上 */
+		/* EXTI shares the AFIO clock and hangs off APB2. */
 		exti: interrupt-controller@40010400 {
 			compatible = "nsing,n32-exti";
 			interrupt-controller;
@@ -566,10 +643,13 @@
 				      <4 1>, <5 5>, <10 6>;
 		};
 
-		/* N32G45x COMP / OPAMP 每路一个 device 节点（对应 Zephyr 通用 comparator/opamp 子系统）
-		 * 基址: COMP=0x40002400 (各通道 CTRL +0x10 起步), OPAMP=0x40002000 (各通道 CS +0x10)。
-		 * COMP 中断为共享线: COMP1/2/3->82, COMP4/5/6->83, COMP7->84。
-		 * 同一组内同一时刻仅允许一个比较器使用中断回调, 故只在每组第一个 (comp1/comp4/comp7) 挂 interrupts。
+		/* One device node per N32G45x COMP / OPAMP instance, for the generic
+		 * Zephyr comparator and opamp subsystems. Base addresses: COMP at
+		 * 0x40002400 (each channel's CTRL at +0x10), OPAMP at 0x40002000
+		 * (each channel's CS at +0x10). The COMP interrupt lines are shared:
+		 * COMP1/2/3 -> 82, COMP4/5/6 -> 83, COMP7 -> 84. Only one comparator
+		 * per group can use the interrupt callback at a time, so interrupts
+		 * are declared on the first instance of each group only.
 		 */
 		comp1: comparator@40002410 {
 			compatible = "nsing,n32-comp";
@@ -643,14 +723,14 @@
 
 
 /*
-		tsc: tsc@40003400 {
-			compatible = "nsing,n32-tsc";
-			reg = <0x40003400 0x400>;
-			clocks = <&rcc N32_CLOCK_TSC>;
-			interrupts = <81 0>;
-			status = "disabled";
-		};
-*/
+ *         tsc: tsc@40003400 {
+ *             compatible = "nsing,n32-tsc";
+ *             reg = <0x40003400 0x400>;
+ *             clocks = <&rcc N32_CLOCK_TSC>;
+ *             interrupts = <81 0>;
+ *             status = "disabled";
+ *         };
+ */
 
 		/* USB FS device controller.  Shares the PMA SRAM (0x40006000)
 		 * and the interrupt line with CAN1; the two must not be used
