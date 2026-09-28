@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# Copyright (c) 2026 Nations Technologies
 # SPDX-License-Identifier: Apache-2.0
 """
 N32G45x COMP / OPAMP register auto-test driven by SEGGER J-Link.
@@ -15,6 +16,7 @@ Prerequisites (env):
   ZEPHYR_SDK_INSTALL_DIR  Zephyr SDK root
   PATH  must include <zephyrproject>/.venv/bin  (west) and J-Link is on PATH
 """
+
 import argparse
 import os
 import re
@@ -31,13 +33,14 @@ OPAMP_BASE = 0x40002000
 
 # Peripheral registers read back from the target as evidence.
 EVIDENCE = [
-    ("COMP1_CTRL",  COMP_BASE + 0x10),   # comp1 positive=PA1, negative=VREF1
-    ("COMP_INTEN",  COMP_BASE + 0x8C),
+    ("COMP1_CTRL", COMP_BASE + 0x10),  # comp1 positive=PA1, negative=VREF1
+    ("COMP_INTEN", COMP_BASE + 0x8C),
     ("COMP_INTSTS", COMP_BASE + 0x90),
     ("COMP_VREFSCL", COMP_BASE + 0x94),
-    ("OPAMP1_CS1",  OPAMP_BASE + 0x00),  # non-inverting PGA, gain x4 after set_gain
-    ("OPAMP4_CS4",  OPAMP_BASE + 0x30),  # follower
+    ("OPAMP1_CS1", OPAMP_BASE + 0x00),  # non-inverting PGA, gain x4 after set_gain
+    ("OPAMP4_CS4", OPAMP_BASE + 0x30),  # follower
 ]
+
 
 # Field expectations on the register evidence above.
 def check_evidence(regs):
@@ -81,10 +84,24 @@ def check_evidence(regs):
 def run_jlink(cmds, timeout=90):
     """Run JLinkExe with the given command lines, return (rc, stdout)."""
     proc = subprocess.run(
-        ["JLinkExe", "-device", DEVICE, "-if", IFACE, "-speed", str(SPEED),
-         "-AutoConnect", "1", "-ExitOnError", "1"],
+        [
+            "JLinkExe",
+            "-device",
+            DEVICE,
+            "-if",
+            IFACE,
+            "-speed",
+            str(SPEED),
+            "-AutoConnect",
+            "1",
+            "-ExitOnError",
+            "1",
+        ],
         input="\n".join(cmds) + "\n",
-        capture_output=True, text=True, timeout=timeout)
+        capture_output=True,
+        text=True,
+        timeout=timeout,
+    )
     return proc.returncode, proc.stdout
 
 
@@ -111,14 +128,15 @@ def get_symbol_addr(elf, name, nm):
 
 
 def main():
-    ap = argparse.ArgumentParser()
+    ap = argparse.ArgumentParser(allow_abbrev=False)
     ap.add_argument("--build", action="store_true", help="build via west first")
-    ap.add_argument("--west-dir", default="/home/lee/zephyrproject",
-                    help="west workspace root")
-    ap.add_argument("--build-dir", default=None,
-                    help="build directory (default <west-dir>/build_n32test)")
-    ap.add_argument("--sleep", type=float, default=2.0,
-                    help="seconds to let the firmware run before phase 2")
+    ap.add_argument("--west-dir", default="/home/lee/zephyrproject", help="west workspace root")
+    ap.add_argument(
+        "--build-dir", default=None, help="build directory (default <west-dir>/build_n32test)"
+    )
+    ap.add_argument(
+        "--sleep", type=float, default=2.0, help="seconds to let the firmware run before phase 2"
+    )
     args = ap.parse_args()
 
     west_dir = os.path.abspath(args.west_dir)
@@ -135,25 +153,29 @@ def main():
     if args.build:
         env = dict(os.environ)
         env["PATH"] = os.path.join(west_dir, ".venv", "bin") + os.pathsep + env["PATH"]
-        subprocess.run(["west", "build", "-b", "n32g45xml_stb", "-d", build_dir,
-                        app, "-p", "never"], check=True, env=env, cwd=west_dir)
+        subprocess.run(
+            ["west", "build", "-b", "n32g45xml_stb", "-d", build_dir, app, "-p", "never"],
+            check=True,
+            env=env,
+            cwd=west_dir,
+        )
 
     addr = get_symbol_addr(elf, "autotest_results", nm)
     if addr is None:
-        sys.exit("symbol autotest_results not found in %s" % elf)
-    print("autotest_results @ 0x%08x" % addr)
+        sys.exit(f"symbol autotest_results not found in {elf}")
+    print(f"autotest_results @ 0x{addr:08x}")
 
     # ---- phase 1: flash, reset, run ---------------------------------
     rc, out = run_jlink(["connect", "loadfile " + hexf, "r", "g", "exit"])
     if rc != 0:
         print(out[-3000:])
-        sys.exit("phase1 (flash/run) failed, rc=%d" % rc)
+        sys.exit(f"phase1 (flash/run) failed, rc={rc}")
     time.sleep(args.sleep)
 
     # ---- phase 2: halt and read --------------------------------------
     cmds = ["connect", "halt"]
     for _n, a in EVIDENCE:
-        cmds.append("mem32 0x%X 1" % a)
+        cmds.append(f"mem32 0x{a:X} 1")
     # read the autotest_results structure (8 words)
     for i in range(8):
         cmds.append("mem32 0x%X 1" % (addr + 4 * i))
@@ -161,19 +183,29 @@ def main():
     rc, out = run_jlink(cmds)
     if rc != 0:
         print(out[-3000:])
-        sys.exit("phase2 (read) failed, rc=%d" % rc)
+        sys.exit(f"phase2 (read) failed, rc={rc}")
 
     regs = parse_mem32(out)
     res = [regs.get(addr + 4 * i) for i in range(8)]
 
     print("\n================ results (RAM) ================")
-    for i, name in enumerate(["magic", "comp1_cfg_ok", "comp1_out",
-                              "comp1_api_ok", "opamp1_cfg_ok",
-                              "opamp1_gain_ok", "opamp4_cfg_ok", "all_ok"]):
-        print("  %-14s = %s" % (name, "0x%08X" % res[i] if res[i] is not None else "?"))
+    for i, name in enumerate(
+        [
+            "magic",
+            "comp1_cfg_ok",
+            "comp1_out",
+            "comp1_api_ok",
+            "opamp1_cfg_ok",
+            "opamp1_gain_ok",
+            "opamp4_cfg_ok",
+            "all_ok",
+        ]
+    ):
+        val = f"0x{res[i]:08X}" if res[i] is not None else "?"
+        print(f"  {name:<14} = {val}")
     print("================ register dump =================")
     for name, a in EVIDENCE:
-        print("  %-13s @0x%08X = 0x%08X" % (name, a, regs[a] if a in regs else 0))
+        print(f"  {name:<13} @0x{a:08X} = 0x{regs.get(a, 0):08X}")
 
     # ---- assertions ------------------------------------------------
     ok = True
@@ -184,20 +216,25 @@ def main():
     if res[0] != 0x4E333254:
         ok = False
         results_fail.append("results magic != N32T")
-    for idx, name in [(1, "comp1_cfg_ok"), (3, "comp1_api_ok"),
-                      (4, "opamp1_cfg_ok"), (5, "opamp1_gain_ok"),
-                      (6, "opamp4_cfg_ok"), (7, "all_ok")]:
+    for idx, name in [
+        (1, "comp1_cfg_ok"),
+        (3, "comp1_api_ok"),
+        (4, "opamp1_cfg_ok"),
+        (5, "opamp1_gain_ok"),
+        (6, "opamp4_cfg_ok"),
+        (7, "all_ok"),
+    ]:
         if res[idx] != 1:
             ok = False
-            results_fail.append("%s != 1" % name)
+            results_fail.append(f"{name} != 1")
 
     print("================ register evidence ==============")
     for okmsg, msg in check_evidence(regs):
-        print("  [%s] %s" % ("PASS" if okmsg else "FAIL", msg))
+        print("  [{}] {}".format("PASS" if okmsg else "FAIL", msg))
         ok = ok and okmsg
 
     if results_fail:
-        print("  results FAIL: %s" % ", ".join(results_fail))
+        print("  results FAIL: {}".format(", ".join(results_fail)))
 
     print("\nRESULT: %s" % ("PASS" if ok else "FAIL"))
     return 0 if ok else 1
