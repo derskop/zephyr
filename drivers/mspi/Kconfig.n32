@@ -1,0 +1,32 @@
+# Copyright (c) 2024 Nations Technologies Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+config MSPI_N32
+	bool "Nations N32 quad-SPI controller driver"
+	default y
+	depends on DT_HAS_NSING_N32_QSPI_ENABLED
+	select PINCTRL if $(dt_compat_any_has_prop,$(DT_COMPAT_NSING_N32_QSPI),pinctrl-0)
+	select DMA if $(dt_compat_any_has_prop,$(DT_COMPAT_NSING_N32_QSPI),dmas)
+	help
+	  Enable the QSPI controller driver for the N32G45x family.
+
+	  A device node with a transmit DMA channel in its dmas property lets the
+	  driver send a packet longer than its FIFO by handing the payload to that
+	  channel. The controller is too slow to be fed from the CPU at its own
+	  bus clock, so a node without one can only read.
+
+config MSPI_N32_TX_DMA_FRAMES
+	int "N32 QSPI transmit DMA bounce buffer, in frames"
+	depends on MSPI_N32
+	default 256
+	help
+	  Frames the driver is willing to hand to the transmit DMA channel. The
+	  channel reads words out of memory, one per frame, so this is four times
+	  as many bytes of RAM as it says, and it has to cover the frames of a
+	  packet that the FIFO could not hold: the handover is one block, and a
+	  packet that does not fit is refused rather than truncated.
+
+	  The default covers a 256 byte page program, which is the largest packet
+	  the MSPI NOR flash layer issues. Lowering it below that leaves the driver
+	  unable to program a flash page; a SPI NOR device with larger pages, or a
+	  caller that builds its own packets, needs it raised.
