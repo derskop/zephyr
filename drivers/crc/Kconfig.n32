@@ -1,7 +1,7 @@
 # Copyright (c) 2024 Nations Technologies
 # SPDX-License-Identifier: Apache-2.0
 
-menuconfig CRC_N32
+config CRC_N32
 	bool "N32 CRC driver"
 	default y
 	depends on DT_HAS_NSING_N32_CRC_ENABLED
