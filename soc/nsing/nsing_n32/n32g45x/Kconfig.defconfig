@@ -5,6 +5,16 @@
 
 if SOC_SERIES_N32G45X
 
+# Both numbers are declared in the devicetree: the rcc node carries SYSCLK and
+# clk_hse carries the crystal. Reading them back here keeps the kernel tick,
+# the HAL's PLL setup and the I2S frame clock on the same value.
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+	default $(dt_node_int_prop_int,/soc/rcc@40021000,clock-frequency)
+
+config N32_HSE_FREQ
+	int
+	default $(dt_node_int_prop_int,/clocks/clk-hse,clock-frequency)
+
 config RESET
 	default y
 

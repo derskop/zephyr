@@ -39,6 +39,11 @@
 		};
 	};
 
+	/*
+	 * The four clock sources the SoC provides. They carry no driver: the
+	 * drivers that need a source frequency read it here by node label, so
+	 * status stays "disabled" as in the other SoC devicetrees.
+	 */
 	clocks {
 		clk_hse: clk-hse {
 			#clock-cells = <0>;
@@ -67,12 +72,6 @@
 			clock-frequency = <DT_FREQ_K(40)>;
 			status = "disabled";
 		};
-
-		pll: pll {
-			#clock-cells = <0>;
-			compatible = "nsing,n32-pll-clock";
-			status = "disabled";
-		};
 	};
 
 	soc {
@@ -80,6 +79,13 @@
 			compatible = "nsing,n32-rcc";
 			#clock-cells = <1>;
 			reg = <0x40021000 0x400>;
+			/*
+			 * SYSCLK as the vendor SystemInit() programs it: the
+			 * 8 MHz HSE through the PLL. A board with another
+			 * crystal overrides it; SYS_CLOCK_HW_CYCLES_PER_SEC
+			 * and the HAL's PLL setup both follow this value.
+			 */
+			clock-frequency = <DT_FREQ_M(144)>;
 
 			rctl: reset-controller {
 				compatible = "nsing,n32-rcc-rctl";
