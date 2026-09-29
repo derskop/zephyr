@@ -16,6 +16,16 @@ if(CONFIG_HAS_NSING_HAL)
   # USE_STDPERIPH_DRIVER: 使能标准外设库代码
   zephyr_compile_definitions(N32G45X USE_STDPERIPH_DRIVER)
 
+  # Both frequencies are declared in the devicetree only: the rcc node carries
+  # SYSCLK, clk_hse carries the crystal. The vendor files leave a guard open for
+  # this (n32g45x.h uses #if !defined HSE_VALUE, system_n32g45x.c uses #ifndef
+  # SYSCLK_FREQ), so no vendor source is modified. Feeding both from one place
+  # also arms the PLL check in system_n32g45x.c, which turns an unusable
+  # (HSE, SYSCLK) pair into a compile error instead of a wrong bus speed.
+  zephyr_compile_definitions(
+    SYSCLK_FREQ=${CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC}
+    HSE_VALUE=${CONFIG_N32_HSE_FREQ})
+
   # 头文件搜索路径
   zephyr_include_directories(${nsing_soc_dir}/include)
   zephyr_include_directories(${nsing_std_dir}/include)
