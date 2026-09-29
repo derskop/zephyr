@@ -16,23 +16,13 @@ properties:
 
   clock-frequency:
     type: int
+    required: true
     description: |
-      default frequency in Hz for clock output
-
-  ahb-prescaler:
-    type: int
-    enum: [1, 2, 4, 8, 16, 64, 128, 256, 512]
-    description: AHB prescaler.
-
-  apb1-prescaler:
-    type: int
-    enum: [1, 2, 4, 8, 16]
-    description: APB1 prescaler.
-
-  apb2-prescaler:
-    type: int
-    enum: [1, 2, 4, 8, 16]
-    description: APB2 prescaler.
+      SYSCLK in Hz, as the vendor SystemInit() programs it. Unlike the bus
+      clocks, which the driver derives from RCC by reading the prescaler
+      fields back, SYSCLK cannot be recovered from a register, so it is
+      declared here. It is also the source of SYS_CLOCK_HW_CYCLES_PER_SEC
+      and of the I2S frame clock prescaler.
 
 clock-cells:
   - bits
