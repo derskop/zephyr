@@ -1,0 +1,48 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+menuconfig ETH_N32
+	bool "Nations N32 Ethernet driver"
+	default y
+	depends on DT_HAS_NSING_N32_ETH_ENABLED
+	select USE_NSING_ETH
+	select PINCTRL
+	select NET_CHECKSUM_OFFLOAD_SUPPORTED if NET_L2_ETHERNET
+	help
+	  Ethernet driver for Nations N32 series MCUs.
+
+if ETH_N32
+
+config ETH_N32_RX_THREAD_STACK_SIZE
+	int "RX thread stack size"
+	default 1500
+	help
+	  RX thread stack size in bytes.
+
+config ETH_N32_RX_THREAD_PRIO
+	int "RX thread priority"
+	default 2
+	help
+	  RX thread priority.
+
+config ETH_N32_MULTICAST_FILTER
+	bool "Multicast hash filter support"
+	select CRC
+	help
+	  Enable support for multicast hash filtering in the MAC.
+	  Once enabled the ethernet MAC performs imperfect filtering
+	  based on a computed hash of the destination MAC address of
+	  the multicast address. Only multicast with the computed
+	  hash set in the multicast table will be received and all
+	  other multicast is dropped by the MAC. If disabled then all
+	  multicast is received by the MAC.
+
+config ETH_N32_HW_CHECKSUM
+	bool "Use TX and RX hardware checksum"
+	depends on NET_CHECKSUM_OFFLOAD
+	help
+	  Enable receive and transmit checksum offload to enhance throughput
+	  performances.
+	  See reference manual for more information on this feature.
+
+endif # ETH_N32

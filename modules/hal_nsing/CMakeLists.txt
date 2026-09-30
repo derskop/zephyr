@@ -12,9 +12,10 @@ if(CONFIG_HAS_NSING_HAL)
 
   zephyr_library_named(hal_nsing)
 
-  # N32G45X: n32g45x.h 要求的芯片选择宏（#ifdef N32G45X）
-  # USE_STDPERIPH_DRIVER: 使能标准外设库代码
-  zephyr_compile_definitions(N32G45X USE_STDPERIPH_DRIVER)
+  # N32G45X: chip selection macro required by n32g45x.h (#ifdef N32G45X)
+  # N32G457_ETH: n32g45x_conf.h selects n32g457_eth.h based on this
+  # USE_STDPERIPH_DRIVER: enables the standard peripheral library code
+  zephyr_compile_definitions(N32G45X N32G457_ETH USE_STDPERIPH_DRIVER)
 
   # Both frequencies are declared in the devicetree only: the rcc node carries
   # SYSCLK, clk_hse carries the crystal. The vendor files leave a guard open for
@@ -26,14 +27,14 @@ if(CONFIG_HAS_NSING_HAL)
     SYSCLK_FREQ=${CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC}
     HSE_VALUE=${CONFIG_N32_HSE_FREQ})
 
-  # 头文件搜索路径
+  # Header search paths
   zephyr_include_directories(${nsing_soc_dir}/include)
   zephyr_include_directories(${nsing_std_dir}/include)
 
-  # SystemInit() 所在
+  # Where SystemInit() lives
   zephyr_library_sources(${nsing_soc_dir}/source/system_${CONFIG_SOC_SERIES}.c)
 
-  # 标准外设库源文件，按 Kconfig 的 USE_NSING_* 按需编译
+  # Standard peripheral library sources, built on demand via the USE_NSING_* Kconfigs
   zephyr_library_sources_ifdef(CONFIG_USE_NSING_MISC  ${nsing_std_src_dir}/misc.c)
   zephyr_library_sources_ifdef(CONFIG_USE_NSING_ADC   ${nsing_std_src_dir}/${CONFIG_SOC_SERIES}_adc.c)
   zephyr_library_sources_ifdef(CONFIG_USE_NSING_BKP   ${nsing_std_src_dir}/${CONFIG_SOC_SERIES}_bkp.c)
@@ -44,7 +45,7 @@ if(CONFIG_HAS_NSING_HAL)
   zephyr_library_sources_ifdef(CONFIG_USE_NSING_DBG   ${nsing_std_src_dir}/${CONFIG_SOC_SERIES}_dbg.c)
   zephyr_library_sources_ifdef(CONFIG_USE_NSING_DMA   ${nsing_std_src_dir}/${CONFIG_SOC_SERIES}_dma.c)
   zephyr_library_sources_ifdef(CONFIG_USE_NSING_DVP   ${nsing_std_src_dir}/${CONFIG_SOC_SERIES}_dvp.c)
-  zephyr_library_sources_ifdef(CONFIG_USE_NSING_ETH   ${nsing_std_src_dir}/${CONFIG_SOC_SERIES}_eth.c)
+  zephyr_library_sources_ifdef(CONFIG_USE_NSING_ETH   ${nsing_std_src_dir}/n32g457_eth.c)
   zephyr_library_sources_ifdef(CONFIG_USE_NSING_EXTI  ${nsing_std_src_dir}/${CONFIG_SOC_SERIES}_exti.c)
   zephyr_library_sources_ifdef(CONFIG_USE_NSING_FLASH ${nsing_std_src_dir}/${CONFIG_SOC_SERIES}_flash.c)
   zephyr_library_sources_ifdef(CONFIG_USE_NSING_GPIO  ${nsing_std_src_dir}/${CONFIG_SOC_SERIES}_gpio.c)

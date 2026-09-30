@@ -1,0 +1,29 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+title: Nations Technologies N32 Ethernet MAC
+
+description: |
+  Nations Technologies N32 series Ethernet MAC with DMA.
+
+compatible: "nsing,n32-eth"
+
+include:
+  - name: ethernet-controller.yaml
+  - name: pinctrl-device.yaml
+
+properties:
+  reg:
+    required: true
+  clocks:
+    required: true
+  interrupts:
+    required: true
+  pinctrl-0:
+    required: true
+  pinctrl-names:
+    required: true
+  phy-handle:
+    required: true
+  phy-connection-type:
+    required: true

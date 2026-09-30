@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config MDIO_N32
+	bool "Nations N32 MDIO controller driver"
+	default y
+	depends on DT_HAS_NSING_N32_MDIO_ENABLED
+	depends on ETH_N32
+	select PINCTRL
+	help
+	  MDIO driver for Nations N32 series MCUs.

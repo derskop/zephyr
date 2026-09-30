@@ -1,0 +1,19 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+title: Nations Technologies N32 MDIO controller
+
+description: |
+  Nations Technologies N32 series Ethernet MAC MDIO controller.
+
+compatible: "nsing,n32-mdio"
+
+include:
+  - name: mdio-controller.yaml
+  - name: pinctrl-device.yaml
+
+examples:
+  - |
+    &mdio {
+      compatible = "nsing,n32-mdio";
+    };

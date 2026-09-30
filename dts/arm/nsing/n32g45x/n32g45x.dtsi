@@ -2,16 +2,19 @@
  * Copyright (c) 2024 Nations Technologies
  * SPDX-License-Identifier: Apache-2.0
  *
- * N32G45x SoC 设备树 —— 按 modules/hal/nsing 外设定义补全。
+ * N32G45x SoC devicetree, filled in from the peripheral definitions under
+ * modules/hal/nsing.
  *
- * 外设基址 / 中断号均来自 HAL 的 n32g45x.h，时钟位来自 n32_clock.h。
- * 已补全：I2C1~4, SPI1~3, ADC1~4, TIM1~8, DMA1~2, DAC, CAN1~2,
- *         RTC, SDIO, DVP, ETH, QSPI, IWDG, WWDG, BKP, PWR, CRC,
- *         EXTI, COMP, OPAMP, TSC, RCC, FLASH, SRAM, GPIOA~G, USART/UART。
+ * Peripheral base addresses and interrupt numbers come from the HAL's
+ * n32g45x.h, clock bits from n32_clock.h.
+ * Covered: I2C1~4, SPI1~3, ADC1~4, TIM1~8, DMA1~2, DAC, CAN1~2,
+ *          RTC, SDIO, DVP, ETH, QSPI, IWDG, WWDG, BKP, PWR, CRC,
+ *          EXTI, COMP, OPAMP, TSC, RCC, FLASH, SRAM, GPIOA~G, USART/UART.
  *
- * 注意：TIM/DMA/RTC/SDIO/DVP/ETH/QSPI/IWDG/WWDG/BKP/PWR/CRC/EXTI/TSC
- *       等外设暂无 Zephyr 驱动，已用块注释暂时注释掉，后续补驱动再启用。
- * COMP（7 路）与 OPAMP（4 路）驱动见 drivers/comparator 与 drivers/opamp。
+ * Note: TIM/DMA/RTC/SDIO/DVP/QSPI/IWDG/WWDG/BKP/PWR/CRC/EXTI/TSC have no
+ *       Zephyr driver yet, so they stay commented out until one is added.
+ * COMP (7 channels) and OPAMP (4 channels) drivers are in drivers/comparator
+ * and drivers/opamp.
  */
 
 #include <mem.h>
@@ -511,7 +514,7 @@
 			status = "disabled";
 		};
 
-	/* ---- 其它外设（均需补 binding） ---- */
+	/* ---- Other peripherals (all still need bindings) ---- */
 
 		sdio: sdio@40018000 {
 			compatible = "nsing,n32-sdio";
@@ -531,15 +534,20 @@
 		};
 */
 
-/*
 		eth: eth@40028000 {
-			compatible = "nsing,n32-eth";	
+			compatible = "nsing,n32-eth";
 			reg = <0x40028000 0x400>;
 			clocks = <&rcc N32_CLOCK_ETH>;
 			interrupts = <61 0>;
 			status = "disabled";
+
+			mdio: mdio {
+				compatible = "nsing,n32-mdio";
+				#address-cells = <1>;
+				#size-cells = <0>;
+				status = "disabled";
+			};
 		};
-*/
 
 		/*
 		 * The transmit channel only. The driver hands a packet that is
@@ -607,7 +615,7 @@
 		status = "disabled";
 	};
 
-		/* EXTI 与 AFIO 共用时钟，直接挂在 APB2 上 */
+		/* EXTI shares its clock with AFIO, so it hangs off APB2 directly */
 		exti: interrupt-controller@40010400 {
 			compatible = "nsing,n32-exti";
 			interrupt-controller;
@@ -622,10 +630,14 @@
 				      <4 1>, <5 5>, <10 6>;
 		};
 
-		/* N32G45x COMP / OPAMP 每路一个 device 节点（对应 Zephyr 通用 comparator/opamp 子系统）
-		 * 基址: COMP=0x40002400 (各通道 CTRL +0x10 起步), OPAMP=0x40002000 (各通道 CS +0x10)。
-		 * COMP 中断为共享线: COMP1/2/3->82, COMP4/5/6->83, COMP7->84。
-		 * 同一组内同一时刻仅允许一个比较器使用中断回调, 故只在每组第一个 (comp1/comp4/comp7) 挂 interrupts。
+		/* Each N32G45x COMP / OPAMP channel gets its own device node, backed
+		 * by the generic Zephyr comparator/opamp subsystems.
+		 * Base addresses: COMP=0x40002400 (per-channel CTRL starting at +0x10),
+		 * OPAMP=0x40002000 (per-channel CS at +0x10).
+		 * COMP interrupts are shared lines: COMP1/2/3->82, COMP4/5/6->83, COMP7->84.
+		 * Only one comparator per group may use the interrupt callback at a time,
+		 * so interrupts are wired on the first channel of each group
+		 * (comp1/comp4/comp7) only.
 		 */
 		comp1: comparator@40002410 {
 			compatible = "nsing,n32-comp";
