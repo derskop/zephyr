@@ -27,9 +27,11 @@ if(CONFIG_HAS_NSING_HAL)
     SYSCLK_FREQ=${CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC}
     HSE_VALUE=${CONFIG_N32_HSE_FREQ})
 
-  # Header search paths
-  zephyr_include_directories(${nsing_soc_dir}/include)
-  zephyr_include_directories(${nsing_std_dir}/include)
+  # Header search paths. The vendor headers are third-party code, so treat them
+  # as system headers: their u8/u16/u32 typedefs would otherwise trip -Wshadow
+  # in Zephyr code using the same identifier (e.g. lib/net_buf/buf_simple.c).
+  zephyr_system_include_directories(${nsing_soc_dir}/include)
+  zephyr_system_include_directories(${nsing_std_dir}/include)
 
   # Where SystemInit() lives
   zephyr_library_sources(${nsing_soc_dir}/source/system_${CONFIG_SOC_SERIES}.c)
