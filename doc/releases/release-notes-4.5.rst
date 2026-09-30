@@ -651,6 +651,15 @@ New Drivers
   * :dtcompatible:`espressif,esp32-usb-otg-hs` - Espressif USB-OTG high-speed
     controller with internal UTMI PHY.
 
+* Ethernet
+
+  * Nations Technologies N32 Ethernet MAC (:dtcompatible:`nsing,n32-eth`), a
+    DMA-driven driver for the N32G45x on-chip MAC.
+
+* MDIO
+
+  * Nations Technologies N32 MDIO controller (:dtcompatible:`nsing,n32-mdio`).
+
 New Samples
 ***********
 
