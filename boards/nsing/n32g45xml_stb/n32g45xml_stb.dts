@@ -211,6 +211,42 @@
 	};
 };
 
+/*
+ * The PHY is a DM9162EP strapped to address 3. It is clocked by its own
+ * 50 MHz oscillator, which is also the source of the RMII REF_CLK the MAC
+ * expects on PA1, so the clock-output and clock-input properties of the
+ * generic PHY nodes are not used.
+ *
+ * The RMII pins are claimed by other nodes: PA7 is SPI1's MOSI, PC4/PC5 are
+ * the QSPI IO2/IO3, and PB12/PB13 are CAN2's RX/TX as well as I2S2's WS and
+ * SPI2's SCK. The nodes below therefore ship disabled: an application enables
+ * them after releasing those nodes, which is what
+ * tests/drivers/build_all/ethernet does for its overlay.
+ */
+&eth {
+	pinctrl-0 = <&eth_ref_clk_pa1 &eth_crs_dv_pa7 &eth_rxd0_pc4 &eth_rxd1_pc5
+		     &eth_tx_en_pb11 &eth_txd0_pb12 &eth_txd1_pb13>;
+	pinctrl-names = "default";
+	phy-handle = <&phy_dm9162>;
+	phy-connection-type = "rmii";
+	zephyr,random-mac-address;
+	status = "disabled";
+};
+
+&mdio {
+	pinctrl-0 = <&eth_mdc_pc1 &eth_mdio_pa2>;
+	pinctrl-names = "default";
+	status = "disabled";
+
+	phy_dm9162: phy@3 {
+		compatible = "ethernet-phy";
+		reg = <3>;
+		default-speeds = "10BASE Half-Duplex", "10BASE Full-Duplex",
+				 "100BASE Half-Duplex", "100BASE Full-Duplex";
+		status = "disabled";
+	};
+};
+
 &sdio {
 	pinctrl-0 = <&sdio_d0_pc8 &sdio_d1_pc9 &sdio_d2_pc10 &sdio_d3_pc11
 		     &sdio_ck_pc12 &sdio_cmd_pd2>;

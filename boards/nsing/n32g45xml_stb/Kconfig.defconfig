@@ -1,0 +1,5 @@
+# Copyright (c) 2026 Nations Technologies Inc.
+# SPDX-License-Identifier: Apache-2.0
+
+configdefault NET_L2_ETHERNET
+	default y if DT_HAS_NSING_N32_ETH_ENABLED

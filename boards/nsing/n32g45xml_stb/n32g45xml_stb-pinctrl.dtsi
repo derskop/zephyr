@@ -251,4 +251,59 @@
 		pinmux = <N32G45X_PINMUX('B', 5, ALTERNATE, SPI3_REMAP0)>;
 		slew-rate = "50mhz";
 	};
+
+	/* ETH, default mapping and RMII mode.
+	 *
+	 * MII_RMII_SEL_REMAP1 is the AFIO_RMP_CFG.MII_RMII_SEL field and puts
+	 * the MAC in RMII mode; it is carried by the transmit and management
+	 * pins, the receive pins carry ETH_REMAP0, the default mapping, which
+	 * is also the reset value of the AFIO_RMP_CFG3 field.
+	 *
+	 * Most of these pins are claimed by other peripherals on this board,
+	 * so an eth node has to be enabled with those nodes disabled:
+	 *   - PA7 is SPI1's MOSI (spi1_mosi_pa7)
+	 *   - PC4/PC5 are the QSPI IO2/IO3 (qspi_io2_pc4 / qspi_io3_pc5)
+	 *   - PB12 is CAN2's RX and I2S2's WS, PB13 is CAN2's TX and SPI2's
+	 *     SCK (can2_rx_pb12 / can2_tx_pb13, i2s2_ws_pb12, spi2_sck_pb13)
+	 */
+	eth_ref_clk_pa1: eth_ref_clk_pa1 {
+		pinmux = <N32G45X_PINMUX('A', 1, GPIO_IN, ETH_REMAP0)>;
+	};
+
+	eth_mdio_pa2: eth_mdio_pa2 {
+		pinmux = <N32G45X_PINMUX('A', 2, ALTERNATE, MII_RMII_SEL_REMAP1)>;
+		slew-rate = "50mhz";
+	};
+
+	eth_crs_dv_pa7: eth_crs_dv_pa7 {
+		pinmux = <N32G45X_PINMUX('A', 7, GPIO_IN, ETH_REMAP0)>;
+	};
+
+	eth_tx_en_pb11: eth_tx_en_pb11 {
+		pinmux = <N32G45X_PINMUX('B', 11, ALTERNATE, MII_RMII_SEL_REMAP1)>;
+		slew-rate = "50mhz";
+	};
+
+	eth_txd0_pb12: eth_txd0_pb12 {
+		pinmux = <N32G45X_PINMUX('B', 12, ALTERNATE, MII_RMII_SEL_REMAP1)>;
+		slew-rate = "50mhz";
+	};
+
+	eth_txd1_pb13: eth_txd1_pb13 {
+		pinmux = <N32G45X_PINMUX('B', 13, ALTERNATE, MII_RMII_SEL_REMAP1)>;
+		slew-rate = "50mhz";
+	};
+
+	eth_mdc_pc1: eth_mdc_pc1 {
+		pinmux = <N32G45X_PINMUX('C', 1, ALTERNATE, MII_RMII_SEL_REMAP1)>;
+		slew-rate = "50mhz";
+	};
+
+	eth_rxd0_pc4: eth_rxd0_pc4 {
+		pinmux = <N32G45X_PINMUX('C', 4, GPIO_IN, ETH_REMAP0)>;
+	};
+
+	eth_rxd1_pc5: eth_rxd1_pc5 {
+		pinmux = <N32G45X_PINMUX('C', 5, GPIO_IN, ETH_REMAP0)>;
+	};
 };
