@@ -8,6 +8,15 @@ common:
 tests:
   net.ethernet.build.default: {}
 
+  net.ethernet.build.n32_ethernet:
+    filter: dt_compat_enabled("nsing,n32-eth")
+    extra_configs:
+      - CONFIG_NET_L2_ETHERNET=y
+      - CONFIG_ETH_N32_MULTICAST_FILTER=y
+      - CONFIG_ETH_N32_HW_CHECKSUM=y
+    platform_allow:
+      - n32g45xml_stb
+
   net.ethernet.build.spi:
     extra_args: DTC_OVERLAY_FILE="spi_devices.overlay"
     extra_configs:

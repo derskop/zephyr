@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) 2026 Nations Technologies Inc.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/* Release the pins the RMII signals are multiplexed on. */
+&spi1 { status = "disabled"; };
+&p25q40ha { status = "disabled"; };
+&spi2 { status = "disabled"; };
+&can2 { status = "disabled"; };
+
+&eth { status = "okay"; };
+&mdio { status = "okay"; };
+&phy_dm9162 { status = "okay"; };
