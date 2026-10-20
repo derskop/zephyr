@@ -1,0 +1,10 @@
+sample:
+  name: N32G45x ADC and DAC
+tests:
+  sample.nsing.n32_adc_dac:
+    build_only: true
+    platform_allow:
+      - n32g45xml_stb/n32g457
+    tags:
+      - adc
+      - dac

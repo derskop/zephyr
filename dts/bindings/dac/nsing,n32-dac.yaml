@@ -5,7 +5,7 @@ description: Nations Technologies N32 digital-to-analog converter
 
 compatible: "nsing,n32-dac"
 
-include: [dac-controller.yaml]
+include: [dac-controller.yaml, pinctrl-device.yaml]
 
 properties:
   reg:
@@ -21,6 +21,10 @@ properties:
     type: int
     required: true
     description: Number of DAC channels
+
+  pinctrl-0:
+    type: phandles
+    description: DAC output pins in analog mode
 
 io-channel-cells:
   - output

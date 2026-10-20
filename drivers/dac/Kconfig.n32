@@ -1,0 +1,11 @@
+# Copyright (c) 2026 Nations Technologies
+# SPDX-License-Identifier: Apache-2.0
+
+config DAC_N32
+	bool "Nations N32G45x DAC driver"
+	default y
+	depends on DT_HAS_NSING_N32_DAC_ENABLED
+	select PINCTRL
+	select USE_NSING_DAC
+	help
+	  Enable the two-channel N32G45x DAC driver.

@@ -350,7 +350,7 @@
 			clocks = <&rcc N32_CLOCK_ADC1>;
 			interrupts = <18 0>;
 			#io-channel-cells = <1>;
-			channels = <16>;
+			channels = <11>;
 			status = "disabled";
 		};
 
@@ -360,7 +360,7 @@
 			clocks = <&rcc N32_CLOCK_ADC2>;
 			interrupts = <18 0>;
 			#io-channel-cells = <1>;
-			channels = <16>;
+			channels = <13>;
 			status = "disabled";
 		};
 
@@ -370,7 +370,7 @@
 			clocks = <&rcc N32_CLOCK_ADC3>;
 			interrupts = <47 0>;
 			#io-channel-cells = <1>;
-			channels = <16>;
+			channels = <15>;
 			status = "disabled";
 		};
 
@@ -380,7 +380,7 @@
 			clocks = <&rcc N32_CLOCK_ADC4>;
 			interrupts = <47 0>;
 			#io-channel-cells = <1>;
-			channels = <16>;
+			channels = <13>;
 			status = "disabled";
 		};
 
